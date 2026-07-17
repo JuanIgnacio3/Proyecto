@@ -19,6 +19,17 @@ body {
   font-family: 'DM Sans', sans-serif;
 }
 
+/*
+  Fix Radix Dialog: al cerrarse, Radix mantiene montado el contenido hasta que
+  la animacion de salida emite `animationend`. Si ese evento no dispara, el
+  modal queda visible aunque su estado sea "closed". Desactivamos la animacion
+  de salida para garantizar el desmontaje inmediato del overlay y del contenido.
+*/
+[role='dialog'][data-state='closed'],
+.dlg-overlay[data-state='closed'] {
+  animation: none !important;
+}
+
 @theme {
   --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);

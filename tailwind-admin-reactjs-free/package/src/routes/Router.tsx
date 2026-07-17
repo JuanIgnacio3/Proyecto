@@ -20,6 +20,7 @@ const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 
 const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModulePage')));
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
+const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -33,6 +34,7 @@ const Router = [
         children: [
           { path: '/', element: <Modern /> },
           { path: '/estudiantes', element: <Estudiantes /> },
+          { path: '/profesores', element: <Profesores /> },
           {
             path: '/calendario',
         element: (
@@ -52,17 +54,6 @@ const Router = [
             description="Modulo para publicar avisos institucionales dirigidos a estudiantes, familias y personal."
             icon="solar:notification-unread-linear"
             primaryAction="Nuevo comunicado"
-          />
-        ),
-      },
-      {
-        path: '/profesores',
-        element: (
-          <SchoolModulePage
-            title="Profesores"
-            description="Administracion del personal docente, materias impartidas, horarios y grupos asignados."
-            icon="solar:square-academic-cap-linear"
-            primaryAction="Registrar profesor"
           />
         ),
       },
