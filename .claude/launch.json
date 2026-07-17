@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vite-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--host", "--port", "5173"],
+      "cwd": "tailwind-admin-reactjs-free/package",
+      "port": 5173
+    }
+  ]
+}

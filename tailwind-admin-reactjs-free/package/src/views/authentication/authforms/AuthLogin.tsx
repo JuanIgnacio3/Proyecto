@@ -1,41 +1,74 @@
-import { Link } from 'react-router';
+import { useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router';
 import { Button } from 'src/components/ui/button';
-import { Checkbox } from 'src/components/ui/checkbox';
 import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
+import { useAuth } from 'src/context/auth-context';
+import { ApiError } from 'src/lib/api';
 
 const AuthLogin = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [correo, setCorreo] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await login(correo, password);
+      navigate('/');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.status === 401 ? 'Correo o contrasena incorrectos.' : err.message);
+      } else {
+        setError('No se pudo conectar con el servidor.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <>
-      <form className="mt-6">
-        <div className="mb-4">
-          <div className="mb-2 block">
-            <Label htmlFor="Username">Username</Label>
-          </div>
-          <Input id="username" type="text" />
+    <form className="mt-6" onSubmit={handleSubmit}>
+      {error && (
+        <div className="mb-4 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
+          {error}
         </div>
-        <div className="mb-4">
-          <div className="mb-2 block">
-            <Label htmlFor="userpwd">Password</Label>
-          </div>
-          <Input id="userpwd" type="password" />
+      )}
+      <div className="mb-4">
+        <div className="mb-2 block">
+          <Label htmlFor="correo">Correo institucional</Label>
         </div>
-        <div className="flex justify-between my-5">
-          <div className="flex items-center gap-2">
-            <Checkbox id="accept" className="checkbox" />
-            <Label htmlFor="accept" className="opacity-90 font-normal cursor-pointer">
-              Remeber this Device
-            </Label>
-          </div>
-          <Link to={'/'} className="text-primary text-sm font-medium">
-            Forgot Password ?
-          </Link>
+        <Input
+          id="correo"
+          type="email"
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
+          placeholder="usuario@ctpsanpedrodebarva.ed.cr"
+          required
+        />
+      </div>
+      <div className="mb-4">
+        <div className="mb-2 block">
+          <Label htmlFor="userpwd">Contrasena</Label>
         </div>
-        <Button asChild className="w-full">
-          <Link to="/">Sign in</Link>
-        </Button>
-      </form>
-    </>
+        <Input
+          id="userpwd"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full mt-2" disabled={submitting}>
+        {submitting ? 'Ingresando...' : 'Iniciar sesion'}
+      </Button>
+    </form>
   );
 };
 

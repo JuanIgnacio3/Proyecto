@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router';
 import Loadable from '../layouts/full/shared/loadable/Loadable';
+import RequireAuth from '../components/auth/RequireAuth';
 
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
@@ -18,17 +19,22 @@ const Maintainance = Loadable(lazy(() => import('../views/authentication/Maintai
 const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 
 const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModulePage')));
+const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
 const Router = [
   {
-    path: '/',
-    element: <FullLayout />,
+    element: <RequireAuth />,
     children: [
-      { path: '/', element: <Modern /> },
       {
-        path: '/calendario',
+        path: '/',
+        element: <FullLayout />,
+        children: [
+          { path: '/', element: <Modern /> },
+          { path: '/estudiantes', element: <Estudiantes /> },
+          {
+            path: '/calendario',
         element: (
           <SchoolModulePage
             title="Calendario"
@@ -46,17 +52,6 @@ const Router = [
             description="Modulo para publicar avisos institucionales dirigidos a estudiantes, familias y personal."
             icon="solar:notification-unread-linear"
             primaryAction="Nuevo comunicado"
-          />
-        ),
-      },
-      {
-        path: '/estudiantes',
-        element: (
-          <SchoolModulePage
-            title="Estudiantes"
-            description="Gestion de expedientes, datos personales, estado de matricula, grupo asignado y contactos familiares."
-            icon="solar:user-rounded-linear"
-            primaryAction="Registrar estudiante"
           />
         ),
       },
@@ -170,7 +165,9 @@ const Router = [
           />
         ),
       },
-      { path: '*', element: <Navigate to="/auth/404" /> },
+          { path: '*', element: <Navigate to="/auth/404" /> },
+        ],
+      },
     ],
   },
   {
