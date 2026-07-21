@@ -26,6 +26,7 @@ const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
 const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
 const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 const Asistencia = Loadable(lazy(() => import('../views/school/Asistencia')));
+const Calificaciones = Loadable(lazy(() => import('../views/school/Calificaciones')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -45,6 +46,7 @@ const Router = [
           { path: '/subgrupos', element: <Subgrupos /> },
           { path: '/encargados', element: <Encargados /> },
           { path: '/asistencia', element: <Asistencia /> },
+          { path: '/calificaciones', element: <Calificaciones /> },
           {
             path: '/calendario',
         element: (
@@ -75,17 +77,6 @@ const Router = [
             description="Gestion del equipo administrativo, roles internos, informacion de contacto y responsabilidades."
             icon="solar:users-group-rounded-linear"
             primaryAction="Registrar administrativo"
-          />
-        ),
-      },
-      {
-        path: '/calificaciones',
-        element: (
-          <SchoolModulePage
-            title="Calificaciones"
-            description="Registro de evaluaciones, notas por periodo, rubros y reportes academicos."
-            icon="solar:clipboard-check-linear"
-            primaryAction="Nueva evaluacion"
           />
         ),
       },
