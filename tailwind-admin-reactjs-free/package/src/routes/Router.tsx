@@ -23,6 +23,7 @@ const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
+const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -39,6 +40,7 @@ const Router = [
           { path: '/profesores', element: <Profesores /> },
           { path: '/materias', element: <Materias /> },
           { path: '/grupos', element: <Grupos /> },
+          { path: '/encargados', element: <Encargados /> },
           {
             path: '/calendario',
         element: (
@@ -69,17 +71,6 @@ const Router = [
             description="Gestion del equipo administrativo, roles internos, informacion de contacto y responsabilidades."
             icon="solar:users-group-rounded-linear"
             primaryAction="Registrar administrativo"
-          />
-        ),
-      },
-      {
-        path: '/encargados',
-        element: (
-          <SchoolModulePage
-            title="Encargados"
-            description="Registro de padres, madres o encargados legales asociados a estudiantes."
-            icon="solar:user-hand-up-linear"
-            primaryAction="Registrar encargado"
           />
         ),
       },

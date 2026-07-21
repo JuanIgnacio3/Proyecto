@@ -4,6 +4,7 @@ from app.api.v1.endpoints import (
     asignaturas,
     auth,
     catalogos,
+    encargados,
     estudiantes,
     grupos,
     profesores,
@@ -19,4 +20,5 @@ api_router.include_router(
     asignaturas.router, prefix="/asignaturas", tags=["asignaturas"]
 )
 api_router.include_router(grupos.router, prefix="/grupos", tags=["grupos"])
+api_router.include_router(encargados.router, prefix="/encargados", tags=["encargados"])
 api_router.include_router(catalogos.router, prefix="/catalogos", tags=["catalogos"])
