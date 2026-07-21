@@ -22,6 +22,7 @@ const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModul
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 const Materias = Loadable(lazy(() => import('../views/school/Materias')));
+const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -37,6 +38,7 @@ const Router = [
           { path: '/estudiantes', element: <Estudiantes /> },
           { path: '/profesores', element: <Profesores /> },
           { path: '/materias', element: <Materias /> },
+          { path: '/grupos', element: <Grupos /> },
           {
             path: '/calendario',
         element: (
@@ -78,17 +80,6 @@ const Router = [
             description="Registro de padres, madres o encargados legales asociados a estudiantes."
             icon="solar:user-hand-up-linear"
             primaryAction="Registrar encargado"
-          />
-        ),
-      },
-      {
-        path: '/grupos',
-        element: (
-          <SchoolModulePage
-            title="Grupos y secciones"
-            description="Organizacion de niveles, secciones, aulas, profesores guia y cupos disponibles."
-            icon="solar:layers-linear"
-            primaryAction="Crear grupo"
           />
         ),
       },
