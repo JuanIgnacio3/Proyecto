@@ -27,6 +27,7 @@ const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
 const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 const Asistencia = Loadable(lazy(() => import('../views/school/Asistencia')));
 const Calificaciones = Loadable(lazy(() => import('../views/school/Calificaciones')));
+const Reportes = Loadable(lazy(() => import('../views/school/Reportes')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -47,6 +48,7 @@ const Router = [
           { path: '/encargados', element: <Encargados /> },
           { path: '/asistencia', element: <Asistencia /> },
           { path: '/calificaciones', element: <Calificaciones /> },
+          { path: '/reportes', element: <Reportes /> },
           {
             path: '/calendario',
         element: (
@@ -88,17 +90,6 @@ const Router = [
             description="Proceso de ingreso, renovacion, estado de matricula y documentacion requerida."
             icon="solar:document-add-linear"
             primaryAction="Nueva matricula"
-          />
-        ),
-      },
-      {
-        path: '/reportes',
-        element: (
-          <SchoolModulePage
-            title="Reportes"
-            description="Panel para reportes academicos, asistencia, matricula, personal y actividad institucional."
-            icon="solar:chart-square-linear"
-            primaryAction="Generar reporte"
           />
         ),
       },
