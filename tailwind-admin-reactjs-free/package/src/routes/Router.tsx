@@ -21,6 +21,7 @@ const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModulePage')));
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
+const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -35,6 +36,7 @@ const Router = [
           { path: '/', element: <Modern /> },
           { path: '/estudiantes', element: <Estudiantes /> },
           { path: '/profesores', element: <Profesores /> },
+          { path: '/materias', element: <Materias /> },
           {
             path: '/calendario',
         element: (
@@ -87,17 +89,6 @@ const Router = [
             description="Organizacion de niveles, secciones, aulas, profesores guia y cupos disponibles."
             icon="solar:layers-linear"
             primaryAction="Crear grupo"
-          />
-        ),
-      },
-      {
-        path: '/materias',
-        element: (
-          <SchoolModulePage
-            title="Materias"
-            description="Catalogo academico de asignaturas, carga horaria, docentes vinculados y niveles."
-            icon="solar:notebook-bookmark-linear"
-            primaryAction="Nueva materia"
           />
         ),
       },
