@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     estudiantes,
     grupos,
     profesores,
+    stats,
     subgrupos,
 )
 
@@ -30,3 +31,4 @@ api_router.include_router(
 )
 api_router.include_router(encargados.router, prefix="/encargados", tags=["encargados"])
 api_router.include_router(catalogos.router, prefix="/catalogos", tags=["catalogos"])
+api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
