@@ -10,6 +10,7 @@ from app.models.subgrupo_profesor import SubGrupoProfesor
 from app.models.subgrupo_estudiante import SubGrupoEstudiante
 from app.models.encargado import Encargado
 from app.models.encargado_estudiante import EncargadoEstudiante
+from app.models.asistencia import Asistencia
 
 __all__ = [
     "Rol",
@@ -24,4 +25,5 @@ __all__ = [
     "SubGrupoEstudiante",
     "Encargado",
     "EncargadoEstudiante",
+    "Asistencia",
 ]

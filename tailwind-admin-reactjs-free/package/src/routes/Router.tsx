@@ -25,6 +25,7 @@ const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
 const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
 const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
+const Asistencia = Loadable(lazy(() => import('../views/school/Asistencia')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -43,6 +44,7 @@ const Router = [
           { path: '/grupos', element: <Grupos /> },
           { path: '/subgrupos', element: <Subgrupos /> },
           { path: '/encargados', element: <Encargados /> },
+          { path: '/asistencia', element: <Asistencia /> },
           {
             path: '/calendario',
         element: (
@@ -73,17 +75,6 @@ const Router = [
             description="Gestion del equipo administrativo, roles internos, informacion de contacto y responsabilidades."
             icon="solar:users-group-rounded-linear"
             primaryAction="Registrar administrativo"
-          />
-        ),
-      },
-      {
-        path: '/asistencia',
-        element: (
-          <SchoolModulePage
-            title="Asistencia"
-            description="Control diario de asistencia por grupo, estudiante, fecha y justificaciones."
-            icon="solar:checklist-minimalistic-linear"
-            primaryAction="Tomar asistencia"
           />
         ),
       },
