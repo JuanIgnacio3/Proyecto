@@ -80,6 +80,12 @@ const SchoolSidebarContent: MenuItem[] = [
         url: '/grupos',
       },
       {
+        id: 'subgroups',
+        name: 'Subgrupos',
+        icon: 'solar:users-group-two-rounded-linear',
+        url: '/subgrupos',
+      },
+      {
         id: 'subjects',
         name: 'Materias',
         icon: 'solar:notebook-bookmark-linear',

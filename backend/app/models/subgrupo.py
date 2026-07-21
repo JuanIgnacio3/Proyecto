@@ -13,5 +13,9 @@ class SubGrupo(Base):
     id_grupo: Mapped[int] = mapped_column(ForeignKey("grupo.id_grupo"), nullable=False, index=True)
 
     grupo: Mapped["Grupo"] = relationship(back_populates="subgrupos")
-    profesores: Mapped[list["SubGrupoProfesor"]] = relationship(back_populates="subgrupo")
-    estudiantes: Mapped[list["SubGrupoEstudiante"]] = relationship(back_populates="subgrupo")
+    profesores: Mapped[list["SubGrupoProfesor"]] = relationship(
+        back_populates="subgrupo", cascade="all, delete-orphan"
+    )
+    estudiantes: Mapped[list["SubGrupoEstudiante"]] = relationship(
+        back_populates="subgrupo", cascade="all, delete-orphan"
+    )

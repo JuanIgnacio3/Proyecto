@@ -23,6 +23,7 @@ const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
+const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
 const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
@@ -40,6 +41,7 @@ const Router = [
           { path: '/profesores', element: <Profesores /> },
           { path: '/materias', element: <Materias /> },
           { path: '/grupos', element: <Grupos /> },
+          { path: '/subgrupos', element: <Subgrupos /> },
           { path: '/encargados', element: <Encargados /> },
           {
             path: '/calendario',
