@@ -9,6 +9,10 @@ export function createSubgrupo(payload: SubgrupoCreate): Promise<Subgrupo> {
   return api.post<Subgrupo>('/subgrupos/', payload);
 }
 
+export function updateSubgrupo(id: number, payload: SubgrupoCreate): Promise<Subgrupo> {
+  return api.put<Subgrupo>(`/subgrupos/${id}`, payload);
+}
+
 export function deleteSubgrupo(id: number): Promise<void> {
   return api.del<void>(`/subgrupos/${id}`);
 }

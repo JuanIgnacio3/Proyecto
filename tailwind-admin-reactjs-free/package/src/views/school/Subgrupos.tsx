@@ -15,7 +15,12 @@ import { ApiError } from 'src/lib/api';
 import { listEstudiantes } from 'src/lib/estudiantes';
 import { listGrupos } from 'src/lib/grupos';
 import { listProfesores } from 'src/lib/profesores';
-import { createSubgrupo, deleteSubgrupo, listSubgrupos } from 'src/lib/subgrupos';
+import {
+  createSubgrupo,
+  deleteSubgrupo,
+  listSubgrupos,
+  updateSubgrupo,
+} from 'src/lib/subgrupos';
 import type { Estudiante } from 'src/types/estudiante';
 import type { Grupo } from 'src/types/grupo';
 import type { Profesor } from 'src/types/profesor';
@@ -38,6 +43,7 @@ const Subgrupos = () => {
   const [listError, setListError] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Subgrupo | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [profesoresIds, setProfesoresIds] = useState<number[]>([]);
   const [estudiantesIds, setEstudiantesIds] = useState<number[]>([]);
@@ -79,7 +85,8 @@ const Subgrupos = () => {
   const toggle = (setter: typeof setProfesoresIds, id: number) =>
     setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const openForm = () => {
+  const openCreate = () => {
+    setEditing(null);
     setForm({ ...emptyForm });
     setProfesoresIds([]);
     setEstudiantesIds([]);
@@ -87,18 +94,36 @@ const Subgrupos = () => {
     setOpen(true);
   };
 
-  const handleCreate = async (e: FormEvent) => {
+  const openEdit = (sg: Subgrupo) => {
+    setEditing(sg);
+    setForm({
+      name_subgrupo: sg.name_subgrupo,
+      tipo_subgrupo: sg.tipo_subgrupo,
+      id_grupo: String(sg.id_grupo),
+    });
+    setProfesoresIds(sg.profesores.map((p) => p.id_profesor));
+    setEstudiantesIds(sg.estudiantes.map((e) => e.id_estudiante));
+    setFormError(null);
+    setOpen(true);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setSaving(true);
     try {
-      await createSubgrupo({
+      const payload = {
         name_subgrupo: form.name_subgrupo,
         tipo_subgrupo: form.tipo_subgrupo,
         id_grupo: Number(form.id_grupo),
         profesores_ids: profesoresIds,
         estudiantes_ids: estudiantesIds,
-      });
+      };
+      if (editing) {
+        await updateSubgrupo(editing.id_subgrupo, payload);
+      } else {
+        await createSubgrupo(payload);
+      }
       setOpen(false);
       await loadSubgrupos();
     } catch (err) {
@@ -135,7 +160,7 @@ const Subgrupos = () => {
               </div>
             </div>
             {isAdmin && (
-              <Button onClick={openForm} className="md:w-auto w-full">
+              <Button onClick={openCreate} className="md:w-auto w-full">
                 <Icon icon="solar:add-circle-linear" width={18} height={18} />
                 Crear subgrupo
               </Button>
@@ -196,13 +221,22 @@ const Subgrupos = () => {
                       </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-right">
-                          <Button
-                            variant="ghosterror"
-                            size="sm"
-                            onClick={() => handleDelete(sg)}
-                          >
-                            Eliminar
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghostprimary"
+                              size="sm"
+                              onClick={() => openEdit(sg)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="ghosterror"
+                              size="sm"
+                              onClick={() => handleDelete(sg)}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -217,10 +251,10 @@ const Subgrupos = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Crear subgrupo</DialogTitle>
+            <DialogTitle>{editing ? 'Editar subgrupo' : 'Crear subgrupo'}</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreate} className="mt-2">
+          <form onSubmit={handleSubmit} className="mt-2">
             {formError && (
               <div className="mb-4 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
                 {formError}

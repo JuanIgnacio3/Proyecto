@@ -1,5 +1,9 @@
 import { api } from './api';
-import type { Encargado, EncargadoCreate } from 'src/types/encargado';
+import type {
+  Encargado,
+  EncargadoCreate,
+  EncargadoUpdate,
+} from 'src/types/encargado';
 
 export function listEncargados(): Promise<Encargado[]> {
   return api.get<Encargado[]>('/encargados/');
@@ -7,6 +11,10 @@ export function listEncargados(): Promise<Encargado[]> {
 
 export function createEncargado(payload: EncargadoCreate): Promise<Encargado> {
   return api.post<Encargado>('/encargados/', payload);
+}
+
+export function updateEncargado(id: number, payload: EncargadoUpdate): Promise<Encargado> {
+  return api.put<Encargado>(`/encargados/${id}`, payload);
 }
 
 export function deactivateEncargado(id: number): Promise<void> {

@@ -12,7 +12,12 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
-import { createEncargado, deactivateEncargado, listEncargados } from 'src/lib/encargados';
+import {
+  createEncargado,
+  deactivateEncargado,
+  listEncargados,
+  updateEncargado,
+} from 'src/lib/encargados';
 import { listEstudiantes, listTiposDocumento } from 'src/lib/estudiantes';
 import type { Encargado } from 'src/types/encargado';
 import type { Estudiante, TipoDocumento } from 'src/types/estudiante';
@@ -43,6 +48,7 @@ const Encargados = () => {
   const [listError, setListError] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Encargado | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [estudiantesIds, setEstudiantesIds] = useState<number[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -84,21 +90,38 @@ const Encargados = () => {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
-  const openForm = () => {
+  const openCreate = () => {
+    setEditing(null);
     setForm({ ...emptyForm });
     setEstudiantesIds([]);
     setFormError(null);
     setOpen(true);
   };
 
-  const handleCreate = async (e: FormEvent) => {
+  const openEdit = (enc: Encargado) => {
+    setEditing(enc);
+    setForm({
+      name_encargado: enc.name_encargado,
+      sec_name_encargado: enc.sec_name_encargado,
+      id_tipo_documento: String(enc.id_tipo_documento),
+      num_documento_encargado: enc.num_documento_encargado,
+      phone_num_encargado: enc.phone_num_encargado ?? '',
+      direction_encargado: enc.direction_encargado ?? '',
+      parentesco: enc.parentesco,
+      correo_institucional: '',
+      password: '',
+    });
+    setEstudiantesIds(enc.estudiantes.map((e) => e.id_estudiante));
+    setFormError(null);
+    setOpen(true);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setSaving(true);
     try {
-      await createEncargado({
-        correo_institucional: form.correo_institucional,
-        password: form.password,
+      const base = {
         name_encargado: form.name_encargado,
         sec_name_encargado: form.sec_name_encargado,
         id_tipo_documento: Number(form.id_tipo_documento),
@@ -107,7 +130,16 @@ const Encargados = () => {
         direction_encargado: form.direction_encargado || null,
         parentesco: form.parentesco,
         estudiantes_ids: estudiantesIds,
-      });
+      };
+      if (editing) {
+        await updateEncargado(editing.id_encargado, base);
+      } else {
+        await createEncargado({
+          ...base,
+          correo_institucional: form.correo_institucional,
+          password: form.password,
+        });
+      }
       setOpen(false);
       await loadEncargados();
     } catch (err) {
@@ -144,7 +176,7 @@ const Encargados = () => {
               </div>
             </div>
             {isAdmin && (
-              <Button onClick={openForm} className="md:w-auto w-full">
+              <Button onClick={openCreate} className="md:w-auto w-full">
                 <Icon icon="solar:add-circle-linear" width={18} height={18} />
                 Registrar encargado
               </Button>
@@ -217,15 +249,24 @@ const Encargados = () => {
                       </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-right">
-                          {enc.usuario.activo && (
+                          <div className="flex justify-end gap-2">
                             <Button
-                              variant="ghosterror"
+                              variant="ghostprimary"
                               size="sm"
-                              onClick={() => handleDeactivate(enc)}
+                              onClick={() => openEdit(enc)}
                             >
-                              Desactivar
+                              Editar
                             </Button>
-                          )}
+                            {enc.usuario.activo && (
+                              <Button
+                                variant="ghosterror"
+                                size="sm"
+                                onClick={() => handleDeactivate(enc)}
+                              >
+                                Desactivar
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -240,10 +281,10 @@ const Encargados = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Registrar encargado</DialogTitle>
+            <DialogTitle>{editing ? 'Editar encargado' : 'Registrar encargado'}</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreate} className="mt-2">
+          <form onSubmit={handleSubmit} className="mt-2">
             {formError && (
               <div className="mb-4 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
                 {formError}
@@ -327,29 +368,33 @@ const Encargados = () => {
                   onChange={(e) => setField('direction_encargado', e.target.value)}
                 />
               </div>
-              <div>
-                <Label htmlFor="ecorreo">Correo institucional</Label>
-                <Input
-                  id="ecorreo"
-                  type="email"
-                  className="mt-1"
-                  value={form.correo_institucional}
-                  onChange={(e) => setField('correo_institucional', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="epwd">Contrasena inicial</Label>
-                <Input
-                  id="epwd"
-                  type="password"
-                  className="mt-1"
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
+              {!editing && (
+                <>
+                  <div>
+                    <Label htmlFor="ecorreo">Correo institucional</Label>
+                    <Input
+                      id="ecorreo"
+                      type="email"
+                      className="mt-1"
+                      value={form.correo_institucional}
+                      onChange={(e) => setField('correo_institucional', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="epwd">Contrasena inicial</Label>
+                    <Input
+                      id="epwd"
+                      type="password"
+                      className="mt-1"
+                      value={form.password}
+                      onChange={(e) => setField('password', e.target.value)}
+                      minLength={8}
+                      required
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-4">

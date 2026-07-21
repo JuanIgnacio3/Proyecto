@@ -36,6 +36,17 @@ export interface EstudianteCreate {
   id_grupo?: number | null;
 }
 
+export interface EstudianteUpdate {
+  name_estudiante: string;
+  sec_name_estudiante: string;
+  birthdate_estudiante: string;
+  direction_estudiante?: string | null;
+  phone_num_estudiante?: string | null;
+  id_tipo_documento: number;
+  num_documento_estudiante: string;
+  id_grupo?: number | null;
+}
+
 export interface TipoDocumento {
   id_tipo_documento: number;
   name_tipo_documento: string;

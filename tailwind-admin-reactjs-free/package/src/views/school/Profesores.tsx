@@ -17,6 +17,7 @@ import {
   createProfesor,
   deactivateProfesor,
   listProfesores,
+  updateProfesor,
 } from 'src/lib/profesores';
 import type { Grupo, TipoDocumento } from 'src/types/estudiante';
 import type { Profesor } from 'src/types/profesor';
@@ -48,6 +49,7 @@ const Profesores = () => {
   const [listError, setListError] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Profesor | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -83,20 +85,37 @@ const Profesores = () => {
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const openForm = () => {
+  const openCreate = () => {
+    setEditing(null);
     setForm({ ...emptyForm });
     setFormError(null);
     setOpen(true);
   };
 
-  const handleCreate = async (e: FormEvent) => {
+  const openEdit = (prof: Profesor) => {
+    setEditing(prof);
+    setForm({
+      name_profesor: prof.name_profesor,
+      sec_name_profesor: prof.sec_name_profesor,
+      birthdate_profesor: prof.birthdate_profesor,
+      direction_profesor: prof.direction_profesor ?? '',
+      phone_num_profesor: prof.phone_num_profesor ?? '',
+      id_tipo_documento: String(prof.id_tipo_documento),
+      num_documento_profesor: prof.num_documento_profesor,
+      id_grupo: prof.id_grupo ? String(prof.id_grupo) : '',
+      correo_institucional: '',
+      password: '',
+    });
+    setFormError(null);
+    setOpen(true);
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setSaving(true);
     try {
-      await createProfesor({
-        correo_institucional: form.correo_institucional,
-        password: form.password,
+      const base = {
         name_profesor: form.name_profesor,
         sec_name_profesor: form.sec_name_profesor,
         birthdate_profesor: form.birthdate_profesor,
@@ -105,7 +124,16 @@ const Profesores = () => {
         id_tipo_documento: Number(form.id_tipo_documento),
         num_documento_profesor: form.num_documento_profesor,
         id_grupo: form.id_grupo ? Number(form.id_grupo) : null,
-      });
+      };
+      if (editing) {
+        await updateProfesor(editing.id_profesor, base);
+      } else {
+        await createProfesor({
+          ...base,
+          correo_institucional: form.correo_institucional,
+          password: form.password,
+        });
+      }
       setOpen(false);
       await loadProfesores();
     } catch (err) {
@@ -142,7 +170,7 @@ const Profesores = () => {
               </div>
             </div>
             {isAdmin && (
-              <Button onClick={openForm} className="md:w-auto w-full">
+              <Button onClick={openCreate} className="md:w-auto w-full">
                 <Icon icon="solar:add-circle-linear" width={18} height={18} />
                 Registrar profesor
               </Button>
@@ -209,15 +237,24 @@ const Profesores = () => {
                       </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-right">
-                          {prof.usuario.activo && (
+                          <div className="flex justify-end gap-2">
                             <Button
-                              variant="ghosterror"
+                              variant="ghostprimary"
                               size="sm"
-                              onClick={() => handleDeactivate(prof)}
+                              onClick={() => openEdit(prof)}
                             >
-                              Desactivar
+                              Editar
                             </Button>
-                          )}
+                            {prof.usuario.activo && (
+                              <Button
+                                variant="ghosterror"
+                                size="sm"
+                                onClick={() => handleDeactivate(prof)}
+                              >
+                                Desactivar
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -232,10 +269,10 @@ const Profesores = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Registrar profesor</DialogTitle>
+            <DialogTitle>{editing ? 'Editar profesor' : 'Registrar profesor'}</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreate} className="mt-2">
+          <form onSubmit={handleSubmit} className="mt-2">
             {formError && (
               <div className="mb-4 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
                 {formError}
@@ -335,29 +372,33 @@ const Profesores = () => {
                   ))}
                 </select>
               </div>
-              <div>
-                <Label htmlFor="pcorreo">Correo institucional</Label>
-                <Input
-                  id="pcorreo"
-                  type="email"
-                  className="mt-1"
-                  value={form.correo_institucional}
-                  onChange={(e) => setField('correo_institucional', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="ppwd">Contrasena inicial</Label>
-                <Input
-                  id="ppwd"
-                  type="password"
-                  className="mt-1"
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
+              {!editing && (
+                <>
+                  <div>
+                    <Label htmlFor="pcorreo">Correo institucional</Label>
+                    <Input
+                      id="pcorreo"
+                      type="email"
+                      className="mt-1"
+                      value={form.correo_institucional}
+                      onChange={(e) => setField('correo_institucional', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ppwd">Contrasena inicial</Label>
+                    <Input
+                      id="ppwd"
+                      type="password"
+                      className="mt-1"
+                      value={form.password}
+                      onChange={(e) => setField('password', e.target.value)}
+                      minLength={8}
+                      required
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
