@@ -17,6 +17,7 @@ const ACCESO: Record<string, Acceso> = {
     '/calificaciones',
     '/reportes',
     '/comunicados',
+    '/calendario',
   ],
   Administrativo: [
     '/',
@@ -25,9 +26,10 @@ const ACCESO: Record<string, Acceso> = {
     '/matricula',
     '/reportes',
     '/comunicados',
+    '/calendario',
   ],
-  Encargado: ['/reportes', '/comunicados'],
-  Estudiante: ['/reportes', '/comunicados'],
+  Encargado: ['/reportes', '/comunicados', '/calendario'],
+  Estudiante: ['/reportes', '/comunicados', '/calendario'],
 };
 
 // Roles que pueden crear/editar registros de personas (estudiantes, encargados).
@@ -42,6 +44,13 @@ const ROLES_GESTION_COMUNICADOS = ['Administrador', 'Administrativo'];
 
 export function canManageComunicados(role: string | undefined): boolean {
   return !!role && ROLES_GESTION_COMUNICADOS.includes(role);
+}
+
+// Roles que pueden crear/editar eventos del calendario institucional.
+const ROLES_GESTION_CALENDARIO = ['Administrador', 'Administrativo'];
+
+export function canManageCalendario(role: string | undefined): boolean {
+  return !!role && ROLES_GESTION_CALENDARIO.includes(role);
 }
 
 export function canAccess(role: string | undefined, path: string): boolean {

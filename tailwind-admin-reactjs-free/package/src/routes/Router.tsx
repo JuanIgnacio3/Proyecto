@@ -31,6 +31,7 @@ const Calificaciones = Loadable(lazy(() => import('../views/school/Calificacione
 const Reportes = Loadable(lazy(() => import('../views/school/Reportes')));
 const Matricula = Loadable(lazy(() => import('../views/school/Matricula')));
 const Comunicados = Loadable(lazy(() => import('../views/school/Comunicados')));
+const Calendario = Loadable(lazy(() => import('../views/school/Calendario')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -55,18 +56,8 @@ const Router = [
           { path: '/reportes', element: <Reportes /> },
           { path: '/matricula', element: <Matricula /> },
           { path: '/comunicados', element: <Comunicados /> },
+          { path: '/calendario', element: <Calendario /> },
           {
-            path: '/calendario',
-        element: (
-          <SchoolModulePage
-            title="Calendario"
-            description="Vista para actividades institucionales, reuniones, evaluaciones y eventos del curso lectivo."
-            icon="solar:calendar-linear"
-            primaryAction="Nuevo evento"
-          />
-        ),
-      },
-      {
         path: '/configuracion',
         element: (
           <SchoolModulePage

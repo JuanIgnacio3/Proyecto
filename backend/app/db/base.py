@@ -5,6 +5,7 @@ from app.models import (  # noqa: F401
     Asistencia,
     Comunicado,
     Encargado,
+    Evento,
     EncargadoEstudiante,
     Estudiante,
     Evaluacion,

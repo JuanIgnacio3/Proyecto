@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     comunicados,
     encargados,
     estudiantes,
+    eventos,
     grupos,
     matricula,
     profesores,
@@ -44,3 +45,4 @@ api_router.include_router(matricula.router, prefix="/matricula", tags=["matricul
 api_router.include_router(
     comunicados.router, prefix="/comunicados", tags=["comunicados"]
 )
+api_router.include_router(eventos.router, prefix="/eventos", tags=["eventos"])
