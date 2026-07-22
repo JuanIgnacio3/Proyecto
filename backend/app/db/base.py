@@ -3,6 +3,7 @@ from app.models import (  # noqa: F401
     Administrativo,
     Asignatura,
     Asistencia,
+    Comunicado,
     Encargado,
     EncargadoEstudiante,
     Estudiante,

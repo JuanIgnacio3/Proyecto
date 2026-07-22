@@ -16,10 +16,18 @@ const ACCESO: Record<string, Acceso> = {
     '/asistencia',
     '/calificaciones',
     '/reportes',
+    '/comunicados',
   ],
-  Administrativo: ['/', '/estudiantes', '/encargados', '/matricula', '/reportes'],
-  Encargado: ['/reportes'],
-  Estudiante: ['/reportes'],
+  Administrativo: [
+    '/',
+    '/estudiantes',
+    '/encargados',
+    '/matricula',
+    '/reportes',
+    '/comunicados',
+  ],
+  Encargado: ['/reportes', '/comunicados'],
+  Estudiante: ['/reportes', '/comunicados'],
 };
 
 // Roles que pueden crear/editar registros de personas (estudiantes, encargados).
@@ -27,6 +35,13 @@ const ROLES_GESTION_PERSONAS = ['Administrador', 'Administrativo'];
 
 export function canManagePersonas(role: string | undefined): boolean {
   return !!role && ROLES_GESTION_PERSONAS.includes(role);
+}
+
+// Roles que pueden publicar/editar comunicados institucionales.
+const ROLES_GESTION_COMUNICADOS = ['Administrador', 'Administrativo'];
+
+export function canManageComunicados(role: string | undefined): boolean {
+  return !!role && ROLES_GESTION_COMUNICADOS.includes(role);
 }
 
 export function canAccess(role: string | undefined, path: string): boolean {

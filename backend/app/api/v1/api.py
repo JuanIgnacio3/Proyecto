@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     auth,
     calificaciones,
     catalogos,
+    comunicados,
     encargados,
     estudiantes,
     grupos,
@@ -40,3 +41,6 @@ api_router.include_router(catalogos.router, prefix="/catalogos", tags=["catalogo
 api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
 api_router.include_router(reportes.router, prefix="/reportes", tags=["reportes"])
 api_router.include_router(matricula.router, prefix="/matricula", tags=["matricula"])
+api_router.include_router(
+    comunicados.router, prefix="/comunicados", tags=["comunicados"]
+)
