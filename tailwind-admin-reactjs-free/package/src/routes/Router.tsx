@@ -28,6 +28,7 @@ const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 const Asistencia = Loadable(lazy(() => import('../views/school/Asistencia')));
 const Calificaciones = Loadable(lazy(() => import('../views/school/Calificaciones')));
 const Reportes = Loadable(lazy(() => import('../views/school/Reportes')));
+const Matricula = Loadable(lazy(() => import('../views/school/Matricula')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -49,6 +50,7 @@ const Router = [
           { path: '/asistencia', element: <Asistencia /> },
           { path: '/calificaciones', element: <Calificaciones /> },
           { path: '/reportes', element: <Reportes /> },
+          { path: '/matricula', element: <Matricula /> },
           {
             path: '/calendario',
         element: (
@@ -79,17 +81,6 @@ const Router = [
             description="Gestion del equipo administrativo, roles internos, informacion de contacto y responsabilidades."
             icon="solar:users-group-rounded-linear"
             primaryAction="Registrar administrativo"
-          />
-        ),
-      },
-      {
-        path: '/matricula',
-        element: (
-          <SchoolModulePage
-            title="Matricula"
-            description="Proceso de ingreso, renovacion, estado de matricula y documentacion requerida."
-            icon="solar:document-add-linear"
-            primaryAction="Nueva matricula"
           />
         ),
       },
