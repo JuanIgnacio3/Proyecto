@@ -52,7 +52,6 @@ function Search() {
   const results = useMemo(() => {
     if (!query.trim()) return [];
     return searchItems(SidebarContent, query);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, role]);
 
   return (

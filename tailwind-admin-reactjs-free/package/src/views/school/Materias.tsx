@@ -1,16 +1,17 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import {
+  Banner,
+  CrudFormDialog,
+  EmptyState,
+  PageHeader,
+} from 'src/components/institutional';
 import CardBox from 'src/components/shared/CardBox';
 import { Button } from 'src/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from 'src/components/ui/dialog';
 import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
+import { useModal } from 'src/hooks/useModal';
 import { ApiError } from 'src/lib/api';
 import {
   createAsignatura,
@@ -28,8 +29,7 @@ const Materias = () => {
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Asignatura | null>(null);
+  const { open, setOpen, editing, openCreate, openEdit } = useModal<Asignatura>();
   const [nombre, setNombre] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -50,19 +50,12 @@ const Materias = () => {
     loadAsignaturas();
   }, [loadAsignaturas]);
 
-  const openCreate = () => {
-    setEditing(null);
-    setNombre('');
+  // Sincroniza el formulario cuando se abre el modal (crear o editar).
+  useEffect(() => {
+    if (!open) return;
+    setNombre(editing ? editing.name_asignatura : '');
     setFormError(null);
-    setOpen(true);
-  };
-
-  const openEdit = (asignatura: Asignatura) => {
-    setEditing(asignatura);
-    setNombre(asignatura.name_asignatura);
-    setFormError(null);
-    setOpen(true);
-  };
+  }, [open, editing]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,29 +88,19 @@ const Materias = () => {
 
   return (
     <div className="grid grid-cols-12 gap-6">
-      <div className="col-span-12">
-        <CardBox className="p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary text-white">
-                <Icon icon="solar:notebook-bookmark-linear" width={24} height={24} />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold">Materias</h1>
-                <p className="mt-1 text-muted-foreground">
-                  Catalogo academico de asignaturas conectado al backend.
-                </p>
-              </div>
-            </div>
-            {isAdmin && (
-              <Button onClick={openCreate} className="md:w-auto w-full">
-                <Icon icon="solar:add-circle-linear" width={18} height={18} />
-                Nueva materia
-              </Button>
-            )}
-          </div>
-        </CardBox>
-      </div>
+      <PageHeader
+        icon="solar:notebook-bookmark-linear"
+        title="Materias"
+        description="Catalogo academico de asignaturas conectado al backend."
+        action={
+          isAdmin && (
+            <Button onClick={openCreate} className="md:w-auto w-full">
+              <Icon icon="solar:add-circle-linear" width={18} height={18} />
+              Nueva materia
+            </Button>
+          )
+        }
+      />
 
       <div className="col-span-12">
         <CardBox className="p-0 overflow-hidden">
@@ -129,15 +112,13 @@ const Materias = () => {
           </div>
 
           {listError && (
-            <div className="m-6 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
+            <Banner tone="error" className="m-6">
               {listError}
-            </div>
+            </Banner>
           )}
 
           {!loading && !listError && asignaturas.length === 0 && (
-            <div className="px-6 py-10 text-center text-muted-foreground">
-              No hay materias registradas todavia.
-            </div>
+            <EmptyState message="No hay materias registradas todavia." />
           )}
 
           {asignaturas.length > 0 && (
@@ -186,42 +167,27 @@ const Materias = () => {
         </CardBox>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Editar materia' : 'Nueva materia'}</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="mt-2">
-            {formError && (
-              <div className="mb-4 rounded-md bg-lighterror px-4 py-3 text-sm text-error">
-                {formError}
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="mnombre">Nombre de la materia</Label>
-              <Input
-                id="mnombre"
-                className="mt-1"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej. Estudios Sociales"
-                required
-              />
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? 'Guardando...' : 'Guardar'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CrudFormDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? 'Editar materia' : 'Nueva materia'}
+        error={formError}
+        saving={saving}
+        onSubmit={handleSubmit}
+        className="max-w-md"
+      >
+        <div>
+          <Label htmlFor="mnombre">Nombre de la materia</Label>
+          <Input
+            id="mnombre"
+            className="mt-1"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Ej. Estudios Sociales"
+            required
+          />
+        </div>
+      </CrudFormDialog>
     </div>
   );
 };

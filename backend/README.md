@@ -1,8 +1,36 @@
 # Backend - Sistema Institucional TCU
 
-API construida con FastAPI + SQLAlchemy + PostgreSQL. Por ahora solo trae el
-esqueleto: modelos de datos, migraciones y un endpoint `/health`. Todavia no
-hay autenticacion ni endpoints de negocio (eso viene en los siguientes pasos).
+API construida con FastAPI + SQLAlchemy + PostgreSQL. Expone la API del sistema
+escolar bajo `/api/v1` con autenticacion JWT (OAuth2 password flow) y control de
+acceso por roles.
+
+## Autenticacion y roles
+
+- `POST /api/v1/auth/login` (form) devuelve un JWT; `GET /api/v1/auth/me` retorna
+  el usuario actual. El hash de contrasena usa bcrypt y el token PyJWT.
+- Roles: `Administrador`, `Profesor`, `Administrativo`, `Encargado`, `Estudiante`.
+  Cada endpoint valida el rol con la dependencia `require_roles(...)`.
+
+## Modulos / endpoints
+
+Personas: `estudiantes`, `profesores`, `administrativos`, `encargados`.
+Academico: `asignaturas`, `grupos`, `subgrupos`, `matricula`, `asistencia`,
+`evaluaciones` (calificaciones/notas). Institucional: `comunicados`, `eventos`
+(calendario), `reportes`, `stats` (dashboard). Transversal: `auth`, `catalogos`.
+
+Cada dominio sigue el patron `models/<dominio>.py` + `schemas/<dominio>.py` +
+`api/v1/endpoints/<dominio>.py`, registrado en `app/api/v1/api.py`.
+
+## Datos iniciales (seed)
+
+Crea los roles base, tipos de documento y un usuario administrador de prueba:
+
+```bash
+docker compose exec backend python -m app.db.seed
+```
+
+> El admin del seed y los secretos de `.env.example` son solo para desarrollo
+> local; cambielos antes de cualquier despliegue.
 
 ## Requisitos
 
