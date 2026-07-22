@@ -14,7 +14,7 @@ interface AuthContextValue {
   user: Usuario | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (correo: string, password: string) => Promise<void>;
+  login: (correo: string, password: string) => Promise<Usuario>;
   logout: () => void;
 }
 
@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.access_token);
     const me = await api.get<Usuario>('/auth/me');
     setUser(me);
+    return me;
   }, []);
 
   const logout = useCallback(() => {

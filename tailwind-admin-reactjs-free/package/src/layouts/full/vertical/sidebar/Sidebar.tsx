@@ -4,6 +4,8 @@ import { Icon } from '@iconify/react';
 import FullLogo from '../../shared/logo/FullLogo';
 import { Link, useLocation } from 'react-router';
 import { useTheme } from 'src/components/provider/theme-provider';
+import { useAuth } from 'src/context/auth-context';
+import { canAccess } from 'src/lib/roles';
 import { AMLogo, AMMenu, AMMenuItem, AMSidebar, AMSubmenu } from 'tailwind-sidebar';
 import 'tailwind-sidebar/styles.css';
 
@@ -97,6 +99,17 @@ const SidebarLayout = ({ onClose }: { onClose?: () => void }) => {
   const location = useLocation();
   const pathname = location.pathname;
   const { theme } = useTheme();
+  const { user } = useAuth();
+  const role = user?.rol.name_rol;
+
+  // Cada seccion conserva solo los items permitidos para el rol; las secciones
+  // que quedan sin items no se muestran.
+  const visibleSections = SidebarContent.map((section) => ({
+    ...section,
+    children: (section.children ?? []).filter((item) =>
+      item.url ? canAccess(role, item.url) : true,
+    ),
+  })).filter((section) => (section.children?.length ?? 0) > 0);
 
   // Only allow "light" or "dark" for AMSidebar
   const sidebarMode = theme === 'light' || theme === 'dark' ? theme : undefined;
@@ -122,7 +135,7 @@ const SidebarLayout = ({ onClose }: { onClose?: () => void }) => {
 
       <SimpleBar className="h-[calc(100vh-100px)]">
         <div className="px-6">
-          {SidebarContent.map((section, index) => (
+          {visibleSections.map((section, index) => (
             <div key={index}>
               {renderSidebarItems(
                 [

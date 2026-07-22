@@ -4,6 +4,8 @@ import SidebarContent, { ChildItem, MenuItem } from '../sidebar/schoolSidebarIte
 import { Link } from 'react-router';
 import SimpleBar from 'simplebar-react';
 import { Input } from 'src/components/ui/input';
+import { useAuth } from 'src/context/auth-context';
+import { canAccess } from 'src/lib/roles';
 
 interface SearchResult {
   name: string
@@ -14,6 +16,8 @@ interface SearchResult {
 
 function Search() {
   const [query, setQuery] = useState('');
+  const { user } = useAuth();
+  const role = user?.rol.name_rol;
 
   const searchItems = (items: (MenuItem | ChildItem)[], q: string, parentPath = ''): SearchResult[] => {
     let results: SearchResult[] = [];
@@ -21,8 +25,12 @@ function Search() {
     items.forEach((item) => {
       const currentPath = parentPath ? `${parentPath} / ${item.name}` : item.name;
 
-      // If match found
-      if (item.name?.toLowerCase().includes(q.toLowerCase()) && item.url) {
+      // If match found (y el rol tiene acceso a ese modulo)
+      if (
+        item.name?.toLowerCase().includes(q.toLowerCase()) &&
+        item.url &&
+        canAccess(role, item.url)
+      ) {
         results.push({
           name: item.name,
           url: item.url,
@@ -44,7 +52,8 @@ function Search() {
   const results = useMemo(() => {
     if (!query.trim()) return [];
     return searchItems(SidebarContent, query);
-  }, [query]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, role]);
 
   return (
     <div className="relative w-full">

@@ -27,8 +27,8 @@ ROLES_STAFF = {"Administrador", "Profesor"}
 def _ids_permitidos(db: Session, current_user: Usuario) -> set[int] | None:
     """Devuelve el conjunto de id_estudiante que el usuario puede ver.
 
-    None significa "todos" (Administrador/Profesor). Para un Encargado, solo
-    los estudiantes vinculados a el.
+    None significa "todos" (Administrador/Profesor). Un Encargado ve a los
+    estudiantes vinculados a el; un Estudiante ve solo su propio reporte.
     """
     if current_user.rol.name_rol in ROLES_STAFF:
         return None
@@ -36,15 +36,23 @@ def _ids_permitidos(db: Session, current_user: Usuario) -> set[int] | None:
     encargado = (
         db.query(Encargado).filter(Encargado.id_usuario == current_user.id_usuario).first()
     )
-    if encargado is None:
-        return set()
+    if encargado is not None:
+        return {
+            link.id_estudiante
+            for link in db.query(EncargadoEstudiante.id_estudiante).filter(
+                EncargadoEstudiante.id_encargado == encargado.id_encargado
+            )
+        }
 
-    return {
-        link.id_estudiante
-        for link in db.query(EncargadoEstudiante.id_estudiante).filter(
-            EncargadoEstudiante.id_encargado == encargado.id_encargado
-        )
-    }
+    estudiante = (
+        db.query(Estudiante)
+        .filter(Estudiante.id_usuario == current_user.id_usuario)
+        .first()
+    )
+    if estudiante is not None:
+        return {estudiante.id_estudiante}
+
+    return set()
 
 
 @router.get("/estudiantes-disponibles", response_model=list[EstudianteDisponible])

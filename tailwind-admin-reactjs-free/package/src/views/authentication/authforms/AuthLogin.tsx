@@ -5,6 +5,7 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { landingFor } from 'src/lib/roles';
 
 const AuthLogin = () => {
   const { login } = useAuth();
@@ -20,8 +21,8 @@ const AuthLogin = () => {
     setError(null);
     setSubmitting(true);
     try {
-      await login(correo, password);
-      navigate('/');
+      const me = await login(correo, password);
+      navigate(landingFor(me.rol.name_rol));
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.status === 401 ? 'Correo o contrasena incorrectos.' : err.message);
