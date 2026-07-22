@@ -21,6 +21,7 @@ const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModulePage')));
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
+const Administrativos = Loadable(lazy(() => import('../views/school/Administrativos')));
 const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
 const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
@@ -43,6 +44,7 @@ const Router = [
           { path: '/', element: <Modern /> },
           { path: '/estudiantes', element: <Estudiantes /> },
           { path: '/profesores', element: <Profesores /> },
+          { path: '/administrativos', element: <Administrativos /> },
           { path: '/materias', element: <Materias /> },
           { path: '/grupos', element: <Grupos /> },
           { path: '/subgrupos', element: <Subgrupos /> },
@@ -70,17 +72,6 @@ const Router = [
             description="Modulo para publicar avisos institucionales dirigidos a estudiantes, familias y personal."
             icon="solar:notification-unread-linear"
             primaryAction="Nuevo comunicado"
-          />
-        ),
-      },
-      {
-        path: '/administrativos',
-        element: (
-          <SchoolModulePage
-            title="Administrativos"
-            description="Gestion del equipo administrativo, roles internos, informacion de contacto y responsabilidades."
-            icon="solar:users-group-rounded-linear"
-            primaryAction="Registrar administrativo"
           />
         ),
       },

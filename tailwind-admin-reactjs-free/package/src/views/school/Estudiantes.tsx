@@ -12,6 +12,7 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { canManagePersonas } from 'src/lib/roles';
 import {
   createEstudiante,
   deactivateEstudiante,
@@ -40,7 +41,7 @@ const inputClass =
 
 const Estudiantes = () => {
   const { user } = useAuth();
-  const isAdmin = user?.rol.name_rol === 'Administrador';
+  const isAdmin = canManagePersonas(user?.rol.name_rol);
 
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [tipos, setTipos] = useState<TipoDocumento[]>([]);

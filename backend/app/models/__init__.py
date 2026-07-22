@@ -13,6 +13,7 @@ from app.models.encargado_estudiante import EncargadoEstudiante
 from app.models.asistencia import Asistencia
 from app.models.evaluacion import Evaluacion
 from app.models.nota import Nota
+from app.models.administrativo import Administrativo
 
 __all__ = [
     "Rol",
@@ -30,4 +31,5 @@ __all__ = [
     "Asistencia",
     "Evaluacion",
     "Nota",
+    "Administrativo",
 ]

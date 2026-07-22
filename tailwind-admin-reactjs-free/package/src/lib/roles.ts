@@ -17,9 +17,17 @@ const ACCESO: Record<string, Acceso> = {
     '/calificaciones',
     '/reportes',
   ],
+  Administrativo: ['/', '/estudiantes', '/encargados', '/matricula', '/reportes'],
   Encargado: ['/reportes'],
   Estudiante: ['/reportes'],
 };
+
+// Roles que pueden crear/editar registros de personas (estudiantes, encargados).
+const ROLES_GESTION_PERSONAS = ['Administrador', 'Administrativo'];
+
+export function canManagePersonas(role: string | undefined): boolean {
+  return !!role && ROLES_GESTION_PERSONAS.includes(role);
+}
 
 export function canAccess(role: string | undefined, path: string): boolean {
   if (!role) return false;

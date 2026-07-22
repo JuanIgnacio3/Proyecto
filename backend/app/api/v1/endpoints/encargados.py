@@ -38,7 +38,7 @@ def list_encargados(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> list[Encargado]:
     return (
         db.query(Encargado)
@@ -53,7 +53,7 @@ def list_encargados(
 def create_encargado(
     payload: EncargadoCreate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> Encargado:
     rol_encargado = db.query(Rol).filter(Rol.name_rol == ROL_ENCARGADO).first()
     if rol_encargado is None:
@@ -103,7 +103,7 @@ def create_encargado(
 def get_encargado(
     id_encargado: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> Encargado:
     encargado = db.get(Encargado, id_encargado)
     if encargado is None:
@@ -118,7 +118,7 @@ def update_encargado(
     id_encargado: int,
     payload: EncargadoUpdate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> Encargado:
     encargado = db.get(Encargado, id_encargado)
     if encargado is None:
@@ -163,7 +163,7 @@ def update_encargado(
 def deactivate_encargado(
     id_encargado: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> None:
     encargado = db.get(Encargado, id_encargado)
     if encargado is None:

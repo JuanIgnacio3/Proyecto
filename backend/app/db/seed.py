@@ -6,7 +6,7 @@ from app.models.rol import Rol
 from app.models.tipo_documento import TipoDocumento
 from app.models.usuario import Usuario
 
-BASE_ROLES = ["Administrador", "Profesor", "Estudiante", "Encargado"]
+BASE_ROLES = ["Administrador", "Profesor", "Estudiante", "Encargado", "Administrativo"]
 BASE_TIPOS_DOCUMENTO = ["Cedula de identidad", "DIMEX", "Cedula de residencia", "Pasaporte"]
 ADMIN_EMAIL = "admin@ctpsanpedrodebarva.ed.cr"
 ADMIN_PASSWORD = "ChangeMe123!"

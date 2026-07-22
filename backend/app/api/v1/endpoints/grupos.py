@@ -26,7 +26,7 @@ def _ensure_asignatura(db: Session, id_asignatura: int) -> None:
 @router.get("/", response_model=list[GrupoOut])
 def list_grupos(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> list[Grupo]:
     return db.query(Grupo).order_by(Grupo.id_grupo).all()
 

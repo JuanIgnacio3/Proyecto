@@ -42,7 +42,7 @@ def _estudiantes_activos(db: Session):
 @router.get("/sin-grupo", response_model=list[EstudianteMatricula])
 def estudiantes_sin_grupo(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> list[EstudianteMatricula]:
     estudiantes = (
         _estudiantes_activos(db)
@@ -57,7 +57,7 @@ def estudiantes_sin_grupo(
 def estudiantes_de_grupo(
     id_grupo: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> list[EstudianteMatricula]:
     _ensure_grupo(db, id_grupo)
     estudiantes = (
@@ -74,7 +74,7 @@ def matricular_estudiante(
     id_estudiante: int,
     payload: MatriculaUpdate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> EstudianteMatricula:
     estudiante = db.get(Estudiante, id_estudiante)
     if estudiante is None:
@@ -94,7 +94,7 @@ def matricular_estudiante(
 def matricula_masiva(
     payload: MatriculaMasiva,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> list[EstudianteMatricula]:
     _ensure_grupo(db, payload.id_grupo)
 

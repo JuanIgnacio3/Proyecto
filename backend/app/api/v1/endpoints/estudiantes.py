@@ -20,7 +20,7 @@ def list_estudiantes(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> list[Estudiante]:
     return (
         db.query(Estudiante)
@@ -35,7 +35,7 @@ def list_estudiantes(
 def create_estudiante(
     payload: EstudianteCreate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> Estudiante:
     rol_estudiante = db.query(Rol).filter(Rol.name_rol == ROL_ESTUDIANTE).first()
     if rol_estudiante is None:
@@ -79,7 +79,7 @@ def create_estudiante(
 def get_estudiante(
     id_estudiante: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> Estudiante:
     estudiante = db.get(Estudiante, id_estudiante)
     if estudiante is None:
@@ -94,7 +94,7 @@ def update_estudiante(
     id_estudiante: int,
     payload: EstudianteUpdate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> Estudiante:
     estudiante = db.get(Estudiante, id_estudiante)
     if estudiante is None:
@@ -121,7 +121,7 @@ def update_estudiante(
 def deactivate_estudiante(
     id_estudiante: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> None:
     estudiante = db.get(Estudiante, id_estudiante)
     if estudiante is None:

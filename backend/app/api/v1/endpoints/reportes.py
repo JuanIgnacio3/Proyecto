@@ -21,7 +21,7 @@ from app.schemas.reportes import (
 
 router = APIRouter()
 
-ROLES_STAFF = {"Administrador", "Profesor"}
+ROLES_STAFF = {"Administrador", "Profesor", "Administrativo"}
 
 
 def _ids_permitidos(db: Session, current_user: Usuario) -> set[int] | None:

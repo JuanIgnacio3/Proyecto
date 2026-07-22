@@ -12,25 +12,24 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
-import { canManagePersonas } from 'src/lib/roles';
 import {
-  createEncargado,
-  deactivateEncargado,
-  listEncargados,
-  updateEncargado,
-} from 'src/lib/encargados';
-import { listEstudiantes, listTiposDocumento } from 'src/lib/estudiantes';
-import type { Encargado } from 'src/types/encargado';
-import type { Estudiante, TipoDocumento } from 'src/types/estudiante';
+  createAdministrativo,
+  deactivateAdministrativo,
+  listAdministrativos,
+  updateAdministrativo,
+} from 'src/lib/administrativos';
+import { listTiposDocumento } from 'src/lib/estudiantes';
+import type { Administrativo } from 'src/types/administrativo';
+import type { TipoDocumento } from 'src/types/estudiante';
 
 const emptyForm = {
-  name_encargado: '',
-  sec_name_encargado: '',
+  name_administrativo: '',
+  sec_name_administrativo: '',
   id_tipo_documento: '',
-  num_documento_encargado: '',
-  phone_num_encargado: '',
-  direction_encargado: '',
-  parentesco: '',
+  num_documento_administrativo: '',
+  phone_num_administrativo: '',
+  direction_administrativo: '',
+  cargo: '',
   correo_institucional: '',
   password: '',
 };
@@ -38,28 +37,26 @@ const emptyForm = {
 const inputClass =
   'flex h-10 w-full border border-ld rounded-lg bg-transparent px-3 py-2 text-sm text-ld focus-visible:border-primary focus-visible:outline-0';
 
-const Encargados = () => {
+const Administrativos = () => {
   const { user } = useAuth();
-  const isAdmin = canManagePersonas(user?.rol.name_rol);
+  const isAdmin = user?.rol.name_rol === 'Administrador';
 
-  const [encargados, setEncargados] = useState<Encargado[]>([]);
+  const [administrativos, setAdministrativos] = useState<Administrativo[]>([]);
   const [tipos, setTipos] = useState<TipoDocumento[]>([]);
-  const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Encargado | null>(null);
+  const [editing, setEditing] = useState<Administrativo | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
-  const [estudiantesIds, setEstudiantesIds] = useState<number[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadEncargados = useCallback(async () => {
+  const loadAdministrativos = useCallback(async () => {
     setLoading(true);
     setListError(null);
     try {
-      setEncargados(await listEncargados());
+      setAdministrativos(await listAdministrativos());
     } catch (err) {
       setListError(err instanceof ApiError ? err.message : 'No se pudo cargar la lista.');
     } finally {
@@ -68,51 +65,41 @@ const Encargados = () => {
   }, []);
 
   useEffect(() => {
-    loadEncargados();
-  }, [loadEncargados]);
+    loadAdministrativos();
+  }, [loadAdministrativos]);
 
   useEffect(() => {
     if (!open) return;
-    Promise.all([listTiposDocumento(), listEstudiantes()])
-      .then(([t, e]) => {
-        setTipos(t);
-        setEstudiantes(e);
-      })
+    listTiposDocumento()
+      .then(setTipos)
       .catch(() => {
-        /* los selects quedaran vacios; el backend valida igual */
+        /* el select quedara vacio; el backend valida igual */
       });
   }, [open]);
 
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const toggleEstudiante = (id: number) =>
-    setEstudiantesIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
   const openCreate = () => {
     setEditing(null);
     setForm({ ...emptyForm });
-    setEstudiantesIds([]);
     setFormError(null);
     setOpen(true);
   };
 
-  const openEdit = (enc: Encargado) => {
-    setEditing(enc);
+  const openEdit = (adm: Administrativo) => {
+    setEditing(adm);
     setForm({
-      name_encargado: enc.name_encargado,
-      sec_name_encargado: enc.sec_name_encargado,
-      id_tipo_documento: String(enc.id_tipo_documento),
-      num_documento_encargado: enc.num_documento_encargado,
-      phone_num_encargado: enc.phone_num_encargado ?? '',
-      direction_encargado: enc.direction_encargado ?? '',
-      parentesco: enc.parentesco,
+      name_administrativo: adm.name_administrativo,
+      sec_name_administrativo: adm.sec_name_administrativo,
+      id_tipo_documento: String(adm.id_tipo_documento),
+      num_documento_administrativo: adm.num_documento_administrativo,
+      phone_num_administrativo: adm.phone_num_administrativo ?? '',
+      direction_administrativo: adm.direction_administrativo ?? '',
+      cargo: adm.cargo,
       correo_institucional: '',
       password: '',
     });
-    setEstudiantesIds(enc.estudiantes.map((e) => e.id_estudiante));
     setFormError(null);
     setOpen(true);
   };
@@ -123,38 +110,37 @@ const Encargados = () => {
     setSaving(true);
     try {
       const base = {
-        name_encargado: form.name_encargado,
-        sec_name_encargado: form.sec_name_encargado,
+        name_administrativo: form.name_administrativo,
+        sec_name_administrativo: form.sec_name_administrativo,
         id_tipo_documento: Number(form.id_tipo_documento),
-        num_documento_encargado: form.num_documento_encargado,
-        phone_num_encargado: form.phone_num_encargado || null,
-        direction_encargado: form.direction_encargado || null,
-        parentesco: form.parentesco,
-        estudiantes_ids: estudiantesIds,
+        num_documento_administrativo: form.num_documento_administrativo,
+        phone_num_administrativo: form.phone_num_administrativo || null,
+        direction_administrativo: form.direction_administrativo || null,
+        cargo: form.cargo,
       };
       if (editing) {
-        await updateEncargado(editing.id_encargado, base);
+        await updateAdministrativo(editing.id_administrativo, base);
       } else {
-        await createEncargado({
+        await createAdministrativo({
           ...base,
           correo_institucional: form.correo_institucional,
           password: form.password,
         });
       }
       setOpen(false);
-      await loadEncargados();
+      await loadAdministrativos();
     } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : 'No se pudo guardar el encargado.');
+      setFormError(err instanceof ApiError ? err.message : 'No se pudo guardar el administrativo.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeactivate = async (enc: Encargado) => {
-    if (!confirm(`Desactivar a ${enc.name_encargado} ${enc.sec_name_encargado}?`)) return;
+  const handleDeactivate = async (adm: Administrativo) => {
+    if (!confirm(`Desactivar a ${adm.name_administrativo} ${adm.sec_name_administrativo}?`)) return;
     try {
-      await deactivateEncargado(enc.id_encargado);
-      await loadEncargados();
+      await deactivateAdministrativo(adm.id_administrativo);
+      await loadAdministrativos();
     } catch (err) {
       alert(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
     }
@@ -167,19 +153,19 @@ const Encargados = () => {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary text-white">
-                <Icon icon="solar:user-hand-up-linear" width={24} height={24} />
+                <Icon icon="solar:users-group-rounded-linear" width={24} height={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold">Encargados</h1>
+                <h1 className="text-2xl font-semibold">Administrativos</h1>
                 <p className="mt-1 text-muted-foreground">
-                  Padres, madres o tutores legales asociados a estudiantes.
+                  Personal administrativo con acceso limitado al sistema.
                 </p>
               </div>
             </div>
             {isAdmin && (
               <Button onClick={openCreate} className="md:w-auto w-full">
                 <Icon icon="solar:add-circle-linear" width={18} height={18} />
-                Registrar encargado
+                Registrar administrativo
               </Button>
             )}
           </div>
@@ -191,7 +177,7 @@ const Encargados = () => {
           <div className="border-b border-ld px-6 py-4">
             <h2 className="text-lg font-semibold">Listado</h2>
             <p className="text-sm text-muted-foreground">
-              {loading ? 'Cargando...' : `${encargados.length} encargado(s) registrado(s)`}
+              {loading ? 'Cargando...' : `${administrativos.length} administrativo(s) registrado(s)`}
             </p>
           </div>
 
@@ -201,51 +187,47 @@ const Encargados = () => {
             </div>
           )}
 
-          {!loading && !listError && encargados.length === 0 && (
+          {!loading && !listError && administrativos.length === 0 && (
             <div className="px-6 py-10 text-center text-muted-foreground">
-              No hay encargados registrados todavia.
+              No hay administrativos registrados todavia.
             </div>
           )}
 
-          {encargados.length > 0 && (
+          {administrativos.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="border-b border-ld bg-muted/40">
                   <tr>
                     <th className="px-6 py-3 text-sm font-semibold">Nombre</th>
-                    <th className="px-6 py-3 text-sm font-semibold">Parentesco</th>
-                    <th className="px-6 py-3 text-sm font-semibold">Estudiantes</th>
+                    <th className="px-6 py-3 text-sm font-semibold">Cargo</th>
+                    <th className="px-6 py-3 text-sm font-semibold">Documento</th>
                     <th className="px-6 py-3 text-sm font-semibold">Correo</th>
                     <th className="px-6 py-3 text-sm font-semibold">Estado</th>
                     {isAdmin && <th className="px-6 py-3 text-sm font-semibold text-right">Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
-                  {encargados.map((enc) => (
-                    <tr key={enc.id_encargado} className="border-b border-ld last:border-0">
+                  {administrativos.map((adm) => (
+                    <tr key={adm.id_administrativo} className="border-b border-ld last:border-0">
                       <td className="px-6 py-4 font-medium">
-                        {enc.name_encargado} {enc.sec_name_encargado}
+                        {adm.name_administrativo} {adm.sec_name_administrativo}
                       </td>
-                      <td className="px-6 py-4 text-muted-foreground">{enc.parentesco}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{adm.cargo}</td>
                       <td className="px-6 py-4 text-muted-foreground">
-                        {enc.estudiantes.length === 0
-                          ? '-'
-                          : enc.estudiantes
-                              .map((e) => `${e.name_estudiante} ${e.sec_name_estudiante}`)
-                              .join(', ')}
+                        {adm.num_documento_administrativo}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
-                        {enc.usuario.correo_institucional}
+                        {adm.usuario.correo_institucional}
                       </td>
                       <td className="px-6 py-4">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            enc.usuario.activo
+                            adm.usuario.activo
                               ? 'bg-lightsuccess text-success'
                               : 'bg-lighterror text-error'
                           }`}
                         >
-                          {enc.usuario.activo ? 'Activo' : 'Inactivo'}
+                          {adm.usuario.activo ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
                       {isAdmin && (
@@ -254,15 +236,15 @@ const Encargados = () => {
                             <Button
                               variant="ghostprimary"
                               size="sm"
-                              onClick={() => openEdit(enc)}
+                              onClick={() => openEdit(adm)}
                             >
                               Editar
                             </Button>
-                            {enc.usuario.activo && (
+                            {adm.usuario.activo && (
                               <Button
                                 variant="ghosterror"
                                 size="sm"
-                                onClick={() => handleDeactivate(enc)}
+                                onClick={() => handleDeactivate(adm)}
                               >
                                 Desactivar
                               </Button>
@@ -282,7 +264,9 @@ const Encargados = () => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Editar encargado' : 'Registrar encargado'}</DialogTitle>
+            <DialogTitle>
+              {editing ? 'Editar administrativo' : 'Registrar administrativo'}
+            </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="mt-2">
@@ -294,29 +278,49 @@ const Encargados = () => {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="ename">Nombre</Label>
+                <Label htmlFor="aname">Nombre</Label>
                 <Input
-                  id="ename"
+                  id="aname"
                   className="mt-1"
-                  value={form.name_encargado}
-                  onChange={(e) => setField('name_encargado', e.target.value)}
+                  value={form.name_administrativo}
+                  onChange={(e) => setField('name_administrativo', e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="esecName">Apellidos</Label>
+                <Label htmlFor="asecName">Apellidos</Label>
                 <Input
-                  id="esecName"
+                  id="asecName"
                   className="mt-1"
-                  value={form.sec_name_encargado}
-                  onChange={(e) => setField('sec_name_encargado', e.target.value)}
+                  value={form.sec_name_administrativo}
+                  onChange={(e) => setField('sec_name_administrativo', e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="etipoDoc">Tipo de documento</Label>
+                <Label htmlFor="acargo">Cargo</Label>
+                <Input
+                  id="acargo"
+                  className="mt-1"
+                  value={form.cargo}
+                  onChange={(e) => setField('cargo', e.target.value)}
+                  placeholder="Ej. Secretaria, Orientador"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="aphone">Telefono</Label>
+                <Input
+                  id="aphone"
+                  className="mt-1"
+                  value={form.phone_num_administrativo}
+                  onChange={(e) => setField('phone_num_administrativo', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="atipoDoc">Tipo de documento</Label>
                 <select
-                  id="etipoDoc"
+                  id="atipoDoc"
                   className={`${inputClass} mt-1`}
                   value={form.id_tipo_documento}
                   onChange={(e) => setField('id_tipo_documento', e.target.value)}
@@ -331,50 +335,30 @@ const Encargados = () => {
                 </select>
               </div>
               <div>
-                <Label htmlFor="enumDoc">Numero de documento</Label>
+                <Label htmlFor="anumDoc">Numero de documento</Label>
                 <Input
-                  id="enumDoc"
+                  id="anumDoc"
                   className="mt-1"
-                  value={form.num_documento_encargado}
-                  onChange={(e) => setField('num_documento_encargado', e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="ephone">Telefono</Label>
-                <Input
-                  id="ephone"
-                  className="mt-1"
-                  value={form.phone_num_encargado}
-                  onChange={(e) => setField('phone_num_encargado', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="eparentesco">Parentesco</Label>
-                <Input
-                  id="eparentesco"
-                  className="mt-1"
-                  value={form.parentesco}
-                  onChange={(e) => setField('parentesco', e.target.value)}
-                  placeholder="Ej. Madre, Padre, Tutor"
+                  value={form.num_documento_administrativo}
+                  onChange={(e) => setField('num_documento_administrativo', e.target.value)}
                   required
                 />
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor="edirection">Direccion</Label>
+                <Label htmlFor="adirection">Direccion</Label>
                 <Input
-                  id="edirection"
+                  id="adirection"
                   className="mt-1"
-                  value={form.direction_encargado}
-                  onChange={(e) => setField('direction_encargado', e.target.value)}
+                  value={form.direction_administrativo}
+                  onChange={(e) => setField('direction_administrativo', e.target.value)}
                 />
               </div>
               {!editing && (
                 <>
                   <div>
-                    <Label htmlFor="ecorreo">Correo institucional</Label>
+                    <Label htmlFor="acorreo">Correo institucional</Label>
                     <Input
-                      id="ecorreo"
+                      id="acorreo"
                       type="email"
                       className="mt-1"
                       value={form.correo_institucional}
@@ -383,9 +367,9 @@ const Encargados = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="epwd">Contrasena inicial</Label>
+                    <Label htmlFor="apwd">Contrasena inicial</Label>
                     <Input
-                      id="epwd"
+                      id="apwd"
                       type="password"
                       className="mt-1"
                       value={form.password}
@@ -396,33 +380,6 @@ const Encargados = () => {
                   </div>
                 </>
               )}
-            </div>
-
-            <div className="mt-4">
-              <Label>Estudiantes a cargo</Label>
-              <div className="mt-2 max-h-40 overflow-y-auto rounded-md border border-ld p-3">
-                {estudiantes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No hay estudiantes disponibles.</p>
-                ) : (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {estudiantes.map((est) => (
-                      <label
-                        key={est.id_estudiante}
-                        className="flex items-center gap-2 text-sm cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={estudiantesIds.includes(est.id_estudiante)}
-                          onChange={() => toggleEstudiante(est.id_estudiante)}
-                        />
-                        <span>
-                          {est.name_estudiante} {est.sec_name_estudiante}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -440,4 +397,4 @@ const Encargados = () => {
   );
 };
 
-export default Encargados;
+export default Administrativos;
