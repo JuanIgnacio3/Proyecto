@@ -25,6 +25,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Traduce un error a texto para la UI: mensaje de ApiError o un fallback. */
+export function getErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof ApiError ? err.message : fallback;
+}
+
 type RequestOptions = {
   method?: string;
   body?: unknown;
