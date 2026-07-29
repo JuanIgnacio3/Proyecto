@@ -3,6 +3,18 @@
 Documento de referencia del proyecto: estado, arquitectura, convenciones, fases y
 decisiones vigentes. Contiene solo información consolidada.
 
+## 0. Estado actual (Fase 4)
+
+- **Backend:** completo (todos los dominios: modelos, schemas, endpoints, migraciones).
+- **Panel administrativo:** arquitectura validada; **Ola A finalizada** (Materias,
+  Estudiantes, Encargados, Profesores, Administrativos migrados a la capa
+  institucional).
+- **Arquitectura del sitio público:** **completada** y aprobada — referencia oficial
+  en `docs/ARQUITECTURA-SITIO-PUBLICO.md`. Contenido institucional en
+  `docs/CONTENT_GUIDE.md`.
+- **Fase en curso:** **Fase 4 — Construcción del sitio público** (Hero cerrado;
+  Historia con diseño aprobado, pendiente de implementación).
+
 ## 1. Resumen
 
 Sistema web institucional para un colegio (CTP San Pedro de Barva). Monorepo con
