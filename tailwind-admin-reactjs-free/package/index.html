@@ -1,14 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TailwindAdmin - ReactJS Tailwind</title>
+
+    <!-- Favicon / PWA -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <!-- PENDIENTE: agregar favicon.ico y apple-touch-icon.png (PNG 180x180) e iconos PWA 192/512 para compatibilidad total. -->
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#082a78" />
+
+    <!-- SEO basico. [PROVISIONAL] title/description a validar con el colegio. -->
+    <title>Colegio Técnico Profesional San Pedro de Barva</title>
+    <meta
+      name="description"
+      content="Colegio Técnico Profesional de San Pedro de Barva, Heredia. Educación técnica con aprendizaje práctico y modelo dual desde 2011."
+    />
+
+    <!-- PENDIENTE: reemplazar DOMINIO_OFICIAL por el dominio definitivo cuando se confirme. -->
+    <link rel="canonical" href="https://DOMINIO_OFICIAL/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CTP San Pedro de Barva" />
+    <meta property="og:title" content="Colegio Técnico Profesional San Pedro de Barva" />
+    <meta
+      property="og:description"
+      content="Educación técnica con aprendizaje práctico y modelo dual en San Pedro de Barva, Heredia."
+    />
+    <meta property="og:locale" content="es_CR" />
+    <meta property="og:url" content="https://DOMINIO_OFICIAL/" />
+    <!-- PENDIENTE: og:image (1200x630) cuando exista una imagen institucional real. -->
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Colegio Técnico Profesional San Pedro de Barva" />
+    <meta
+      name="twitter:description"
+      content="Educación técnica con aprendizaje práctico y modelo dual en San Pedro de Barva, Heredia."
+    />
+    <!-- PENDIENTE: twitter:image cuando exista una imagen institucional real. -->
+
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      Datos estructurados (Organization). Solo datos CONFIRMADOS (CONTENT_GUIDE).
+      PENDIENTE: agregar "url" (dominio oficial) y "logo" (logo oficial) cuando existan.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Colegio Técnico Profesional San Pedro de Barva",
+        "alternateName": "CTP San Pedro de Barva",
+        "foundingDate": "2011",
+        "telephone": "+506-2238-5053",
+        "email": "ctp.sanpedrodebarva@mep.go.cr",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "San Pedro de Barva",
+          "addressRegion": "Heredia",
+          "addressCountry": "CR"
+        },
+        "sameAs": [
+          "https://www.facebook.com/CTPSPB/",
+          "https://www.ctpsanpedrobarva.com/"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

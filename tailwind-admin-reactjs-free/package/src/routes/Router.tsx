@@ -6,6 +6,10 @@ import RequireAuth from '../components/auth/RequireAuth';
 /* ***Layouts**** */
 const FullLayout = Loadable(lazy(() => import('../layouts/full/FullLayout')));
 const BlankLayout = Loadable(lazy(() => import('../layouts/blank/BlankLayout')));
+const PublicLayout = Loadable(lazy(() => import('../layouts/public/PublicLayout')));
+
+// Sitio publico
+const PublicHome = Loadable(lazy(() => import('../views/public/Home')));
 
 // authentication
 
@@ -36,6 +40,10 @@ const Calendario = Loadable(lazy(() => import('../views/school/Calendario')));
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
 const Router = [
+  {
+    element: <PublicLayout />,
+    children: [{ path: '/inicio', element: <PublicHome /> }],
+  },
   {
     element: <RequireAuth />,
     children: [

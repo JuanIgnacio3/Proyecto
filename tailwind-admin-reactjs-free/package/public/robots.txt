@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /auth/
+
+# PENDIENTE: reemplazar DOMINIO_OFICIAL por el dominio definitivo cuando se confirme.
+Sitemap: https://DOMINIO_OFICIAL/sitemap.xml
