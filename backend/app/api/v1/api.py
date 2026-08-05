@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     catalogos,
     comunicados,
     encargados,
+    especialidades,
     estudiantes,
     eventos,
     grupos,
@@ -46,3 +47,6 @@ api_router.include_router(
     comunicados.router, prefix="/comunicados", tags=["comunicados"]
 )
 api_router.include_router(eventos.router, prefix="/eventos", tags=["eventos"])
+api_router.include_router(
+    especialidades.router, prefix="/especialidades", tags=["especialidades"]
+)
