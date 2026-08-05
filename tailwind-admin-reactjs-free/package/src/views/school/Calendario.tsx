@@ -1,6 +1,12 @@
-import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
+import {
+  CrudScaffold,
+  PublicationBadge,
+  useConfirm,
+  VisibilityFilter,
+  type Visibilidad,
+} from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -8,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'src/components/ui/dialog';
+import { Checkbox } from 'src/components/ui/checkbox';
 import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
@@ -43,6 +50,7 @@ const emptyForm = {
   fecha_inicio: '',
   fecha_fin: '',
   tipo: 'Actividad' as TipoEvento,
+  es_publico: false,
 };
 
 // Interpreta 'YYYY-MM-DD' como fecha local (evita el corrimiento por zona horaria).
@@ -59,11 +67,13 @@ const diaCorto = (iso: string) =>
 
 const Calendario = () => {
   const { user } = useAuth();
+  const { confirm, notify } = useConfirm();
   const canManage = canManageCalendario(user?.rol.name_rol);
 
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [fVisibilidad, setFVisibilidad] = useState<Visibilidad>('todos');
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Evento | null>(null);
@@ -87,16 +97,26 @@ const Calendario = () => {
     load();
   }, [load]);
 
+  const visibles = useMemo(
+    () =>
+      eventos.filter((e) => {
+        if (fVisibilidad === 'publicos' && !e.es_publico) return false;
+        if (fVisibilidad === 'privados' && e.es_publico) return false;
+        return true;
+      }),
+    [eventos, fVisibilidad],
+  );
+
   const grupos = useMemo(() => {
     const map = new Map<string, Evento[]>();
-    eventos.forEach((e) => {
+    visibles.forEach((e) => {
       const key = mesAnio(e.fecha_inicio);
       const list = map.get(key) ?? [];
       list.push(e);
       map.set(key, list);
     });
     return [...map.entries()];
-  }, [eventos]);
+  }, [visibles]);
 
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -119,6 +139,7 @@ const Calendario = () => {
       fecha_inicio: e.fecha_inicio,
       fecha_fin: e.fecha_fin ?? '',
       tipo: e.tipo,
+      es_publico: e.es_publico,
     });
     setFormError(null);
     setOpen(true);
@@ -135,6 +156,7 @@ const Calendario = () => {
         fecha_inicio: form.fecha_inicio,
         fecha_fin: form.fecha_fin || null,
         tipo: form.tipo,
+        es_publico: form.es_publico,
       };
       if (editing) {
         await updateEvento(editing.id_evento, payload);
@@ -151,117 +173,90 @@ const Calendario = () => {
   };
 
   const handleDelete = async (e: Evento) => {
-    if (!confirm(`Eliminar el evento "${e.titulo}"?`)) return;
+    if (!(await confirm({ title: `Eliminar el evento "${e.titulo}"?`, destructive: true }))) return;
     try {
       await deleteEvento(e.id_evento);
       await load();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
     }
   };
 
   return (
-    <div className="grid grid-cols-12 gap-6">
-      <div className="col-span-12">
-        <CardBox className="p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-4">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary text-white">
-                <Icon icon="solar:calendar-linear" width={24} height={24} />
+    <>
+      <CrudScaffold
+        icon="solar:calendar-linear"
+        title="Calendario"
+        subtitle="Agenda de actividades y eventos institucionales."
+        newLabel="Nuevo evento"
+        onNew={openCreate}
+        canManage={canManage}
+        loading={loading}
+        error={listError}
+        total={eventos.length}
+        shown={visibles.length}
+        emptyMessage='No hay eventos. Crea el primero con "Nuevo evento".'
+        filteredEmptyMessage="Ningún evento coincide con el filtro seleccionado."
+        filters={<VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />}
+      >
+        {grupos.map(([mes, items]) => (
+          <div key={mes} className="col-span-12">
+            <CardBox className="p-0 overflow-hidden">
+              <div className="border-b border-ld px-6 py-4">
+                <h2 className="text-lg font-semibold capitalize">{mes}</h2>
               </div>
-              <div>
-                <h1 className="text-2xl font-semibold">Calendario</h1>
-                <p className="mt-1 text-muted-foreground">
-                  Agenda de actividades y eventos institucionales.
-                </p>
-              </div>
-            </div>
-            {canManage && (
-              <Button onClick={openCreate} className="md:w-auto w-full">
-                <Icon icon="solar:add-circle-linear" width={18} height={18} />
-                Nuevo evento
-              </Button>
-            )}
-          </div>
-        </CardBox>
-      </div>
-
-      {listError && (
-        <div className="col-span-12">
-          <div className="rounded-md bg-lighterror px-4 py-3 text-sm text-error">{listError}</div>
-        </div>
-      )}
-
-      {loading && (
-        <div className="col-span-12">
-          <CardBox className="p-10 text-center text-muted-foreground">Cargando...</CardBox>
-        </div>
-      )}
-
-      {!loading && !listError && eventos.length === 0 && (
-        <div className="col-span-12">
-          <CardBox className="p-10 text-center text-muted-foreground">
-            No hay eventos programados.
-          </CardBox>
-        </div>
-      )}
-
-      {grupos.map(([mes, items]) => (
-        <div key={mes} className="col-span-12">
-          <CardBox className="p-0 overflow-hidden">
-            <div className="border-b border-ld px-6 py-4">
-              <h2 className="text-lg font-semibold capitalize">{mes}</h2>
-            </div>
-            <div className="divide-y divide-ld">
-              {items.map((e) => {
-                const pasado = parseFecha(e.fecha_fin ?? e.fecha_inicio) < hoy;
-                return (
-                  <div
-                    key={e.id_evento}
-                    className={`flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center ${
-                      pasado ? 'opacity-60' : ''
-                    }`}
-                  >
-                    <div className="w-32 shrink-0">
-                      <p className="text-sm font-semibold capitalize">
-                        {diaCorto(e.fecha_inicio)}
-                      </p>
-                      {e.fecha_fin && (
-                        <p className="text-xs text-muted-foreground capitalize">
-                          al {diaCorto(e.fecha_fin)}
+              <div className="divide-y divide-ld">
+                {items.map((e) => {
+                  const pasado = parseFecha(e.fecha_fin ?? e.fecha_inicio) < hoy;
+                  return (
+                    <div
+                      key={e.id_evento}
+                      className={`flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center ${
+                        pasado ? 'opacity-60' : ''
+                      }`}
+                    >
+                      <div className="w-32 shrink-0">
+                        <p className="text-sm font-semibold capitalize">
+                          {diaCorto(e.fecha_inicio)}
                         </p>
+                        {e.fecha_fin && (
+                          <p className="text-xs text-muted-foreground capitalize">
+                            al {diaCorto(e.fecha_fin)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tipoColor[e.tipo]}`}
+                          >
+                            {e.tipo}
+                          </span>
+                          <PublicationBadge isPublic={e.es_publico} className="px-2.5 py-0.5" />
+                          <h3 className="font-medium">{e.titulo}</h3>
+                        </div>
+                        {e.descripcion && (
+                          <p className="mt-1 text-sm text-muted-foreground">{e.descripcion}</p>
+                        )}
+                      </div>
+                      {canManage && (
+                        <div className="flex gap-2">
+                          <Button variant="ghostprimary" size="sm" onClick={() => openEdit(e)}>
+                            Editar
+                          </Button>
+                          <Button variant="ghosterror" size="sm" onClick={() => handleDelete(e)}>
+                            Eliminar
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tipoColor[e.tipo]}`}
-                        >
-                          {e.tipo}
-                        </span>
-                        <h3 className="font-medium">{e.titulo}</h3>
-                      </div>
-                      {e.descripcion && (
-                        <p className="mt-1 text-sm text-muted-foreground">{e.descripcion}</p>
-                      )}
-                    </div>
-                    {canManage && (
-                      <div className="flex gap-2">
-                        <Button variant="ghostprimary" size="sm" onClick={() => openEdit(e)}>
-                          Editar
-                        </Button>
-                        <Button variant="ghosterror" size="sm" onClick={() => handleDelete(e)}>
-                          Eliminar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardBox>
-        </div>
-      ))}
+                  );
+                })}
+              </div>
+            </CardBox>
+          </div>
+        ))}
+      </CrudScaffold>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
@@ -336,6 +331,17 @@ const Calendario = () => {
               />
             </div>
 
+            <div className="mt-4 flex items-center gap-2">
+              <Checkbox
+                id="epublico"
+                checked={form.es_publico}
+                onCheckedChange={(v) => setForm((prev) => ({ ...prev, es_publico: v === true }))}
+              />
+              <Label htmlFor="epublico" className="cursor-pointer">
+                Publicar en el sitio web
+              </Label>
+            </div>
+
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
@@ -347,7 +353,7 @@ const Calendario = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 

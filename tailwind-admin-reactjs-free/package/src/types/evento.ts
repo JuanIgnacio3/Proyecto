@@ -13,6 +13,7 @@ export interface Evento {
   fecha_inicio: string;
   fecha_fin: string | null;
   tipo: TipoEvento;
+  es_publico: boolean;
 }
 
 export interface EventoInput {
@@ -21,4 +22,5 @@ export interface EventoInput {
   fecha_inicio: string;
   fecha_fin?: string | null;
   tipo: TipoEvento;
+  es_publico: boolean;
 }
