@@ -240,6 +240,17 @@ class AuthzContext:
             return query.filter(Encargado.id_encargado.in_(de_mis_estudiantes))
         return query.filter(false())
 
+    def assert_guardian(self, id_encargado: int) -> None:
+        if self._acceso_total:
+            return
+        permitido = self.scope_guardians(
+            self._db.query(Encargado.id_encargado).filter(
+                Encargado.id_encargado == id_encargado
+            )
+        ).first()
+        if permitido is None:
+            raise _FORBIDDEN
+
 
 def require(policy: Policy, roles: tuple[str, ...] = ()):
     """Dependencia-fabrica: declara la politica del endpoint, aplica el RBAC floor

@@ -8,7 +8,6 @@ const ACCESO: Record<string, Acceso> = {
   Profesor: [
     '/',
     '/estudiantes',
-    '/profesores',
     '/encargados',
     '/grupos',
     '/materias',

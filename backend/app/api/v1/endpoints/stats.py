@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.asignatura import Asignatura
 from app.models.asistencia import Asistencia
@@ -35,7 +35,7 @@ def _count_activos(db: Session, model) -> int:
 @router.get("/dashboard", response_model=DashboardStats)
 def dashboard(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(get_current_user),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> DashboardStats:
     total_asistencia = db.query(Asistencia).count()
     presentes = db.query(Asistencia).filter(Asistencia.estado == "Presente").count()

@@ -20,7 +20,7 @@ def list_profesores(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> list[Profesor]:
     return (
         db.query(Profesor)
@@ -79,7 +79,7 @@ def create_profesor(
 def get_profesor(
     id_profesor: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> Profesor:
     profesor = db.get(Profesor, id_profesor)
     if profesor is None:

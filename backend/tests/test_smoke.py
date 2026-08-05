@@ -39,11 +39,11 @@ def test_dataset_determinista(data, db_session):
     from app.models.usuario import Usuario
 
     assert db_session.query(Rol).count() == 5
-    assert db_session.query(Usuario).count() == 7  # 5 roles login + 2 estudiantes
+    assert db_session.query(Usuario).count() == 8  # 5 roles login + 2 estudiantes + 1 encargado extra
     assert db_session.query(Estudiante).count() == 3
     assert db_session.query(Grupo).count() == 2
     assert db_session.query(Profesor).count() == 1
-    assert db_session.query(Encargado).count() == 1
+    assert db_session.query(Encargado).count() == 2
     assert db_session.query(SubGrupo).count() == 2
     # El profesor imparte el grupo propio via subgrupo (id_grupo directo None).
     assert data.prof.id_grupo is None

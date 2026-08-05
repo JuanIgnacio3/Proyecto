@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api import authz
 from app.api.deps import require_roles
 from app.core.security import get_password_hash
 from app.db.session import get_db
@@ -38,10 +39,15 @@ def list_encargados(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.GUARDIAN,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> list[Encargado]:
     return (
-        db.query(Encargado)
+        ctx.scope_guardians(db.query(Encargado))
         .order_by(Encargado.id_encargado)
         .offset(skip)
         .limit(min(limit, 200))
@@ -103,8 +109,14 @@ def create_encargado(
 def get_encargado(
     id_encargado: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.GUARDIAN,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> Encargado:
+    ctx.assert_guardian(id_encargado)
     encargado = db.get(Encargado, id_encargado)
     if encargado is None:
         raise HTTPException(

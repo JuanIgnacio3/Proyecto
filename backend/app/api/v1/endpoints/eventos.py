@@ -26,9 +26,12 @@ def list_eventos(
     anio: int | None = None,
     mes: int | None = None,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(get_current_user),
+    current_user: Usuario = Depends(get_current_user),
 ) -> list[Evento]:
     query = db.query(Evento)
+    # Los no-staff (Encargado/Estudiante) solo ven eventos publicos.
+    if current_user.rol.name_rol not in ("Administrador", "Profesor", "Administrativo"):
+        query = query.filter(Evento.es_publico.is_(True))
     if anio is not None:
         from sqlalchemy import extract
 

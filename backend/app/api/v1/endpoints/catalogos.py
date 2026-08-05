@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api import authz
+from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.grupo import Grupo
 from app.models.tipo_documento import TipoDocumento
@@ -14,7 +15,7 @@ router = APIRouter()
 @router.get("/tipos-documento", response_model=list[TipoDocumentoOut])
 def list_tipos_documento(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(get_current_user),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> list[TipoDocumento]:
     return db.query(TipoDocumento).order_by(TipoDocumento.id_tipo_documento).all()
 
@@ -22,6 +23,11 @@ def list_tipos_documento(
 @router.get("/grupos", response_model=list[GrupoOut])
 def list_grupos(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(get_current_user),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.GROUP,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> list[Grupo]:
-    return db.query(Grupo).order_by(Grupo.id_grupo).all()
+    return ctx.scope_grupos(db.query(Grupo)).order_by(Grupo.id_grupo).all()

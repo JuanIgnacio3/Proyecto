@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, require_roles
+from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.especialidad import Especialidad
 from app.models.usuario import Usuario
@@ -28,7 +28,7 @@ def _get(db: Session, id_especialidad: int) -> Especialidad:
 @router.get("/", response_model=list[EspecialidadOut])
 def list_especialidades(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(get_current_user),
+    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
 ) -> list[Especialidad]:
     return (
         db.query(Especialidad)

@@ -136,7 +136,8 @@ class Dataset:
     est_otro: Estudiante  # estudiante de un grupo ajeno
     est_self: Estudiante  # estudiante asociado al usuario con rol Estudiante
     prof: Profesor
-    enc: Encargado
+    enc: Encargado  # encargado vinculado a est_prof (visible al profesor)
+    enc_otro: Encargado  # encargado vinculado a est_otro (ajeno al profesor)
     subgrupo_prof: SubGrupo  # subgrupo del grupo del profesor (propio)
     subgrupo_otro: SubGrupo  # subgrupo de un grupo ajeno
     user_admin: Usuario
@@ -238,6 +239,23 @@ def data(db_session) -> Dataset:
     s.add(EncargadoEstudiante(id_encargado=enc.id_encargado, id_estudiante=est_prof.id_estudiante))
     s.flush()
 
+    # Segundo encargado, vinculado a est_otro (grupo ajeno al profesor) -> el
+    # profesor NO debe verlo; sirve para probar el scope de encargados.
+    user_enc_otro = make_user("enc_otro@test.cr", "Encargado")
+    s.flush()
+    enc_otro = Encargado(
+        id_usuario=user_enc_otro.id_usuario,
+        name_encargado="EncOtro",
+        sec_name_encargado="Test",
+        id_tipo_documento=tipo.id_tipo_documento,
+        num_documento_encargado="EN-0002",
+        parentesco="Padre",
+    )
+    s.add(enc_otro)
+    s.flush()
+    s.add(EncargadoEstudiante(id_encargado=enc_otro.id_encargado, id_estudiante=est_otro.id_estudiante))
+    s.flush()
+
     return Dataset(
         roles=roles,
         tipo_documento=tipo,
@@ -248,6 +266,7 @@ def data(db_session) -> Dataset:
         est_self=est_self,
         prof=prof,
         enc=enc,
+        enc_otro=enc_otro,
         subgrupo_prof=subgrupo_prof,
         subgrupo_otro=subgrupo_otro,
         user_admin=user_admin,
