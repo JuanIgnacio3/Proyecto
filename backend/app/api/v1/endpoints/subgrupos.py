@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api import authz
 from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.estudiante import Estudiante
@@ -51,9 +52,12 @@ def _validate_ids(db: Session, model, id_column, ids: list[int], label: str) -> 
 @router.get("/", response_model=list[SubGrupoOut])
 def list_subgrupos(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> list[dict]:
-    subgrupos = db.query(SubGrupo).order_by(SubGrupo.id_subgrupo).all()
+    query = ctx.scope_subgrupos(db.query(SubGrupo))
+    subgrupos = query.order_by(SubGrupo.id_subgrupo).all()
     return [_serialize(sg) for sg in subgrupos]
 
 
@@ -94,8 +98,11 @@ def create_subgrupo(
 def get_subgrupo(
     id_subgrupo: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> dict:
+    ctx.assert_subgrupo(id_subgrupo)
     subgrupo = db.get(SubGrupo, id_subgrupo)
     if subgrupo is None:
         raise HTTPException(

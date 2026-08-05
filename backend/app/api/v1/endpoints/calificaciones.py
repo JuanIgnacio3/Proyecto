@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import require_roles
+from app.api import authz
 from app.db.session import get_db
 from app.models.estudiante import Estudiante
 from app.models.evaluacion import Evaluacion
 from app.models.grupo import Grupo
 from app.models.nota import Nota
-from app.models.usuario import Usuario
 from app.schemas.calificaciones import (
     EvaluacionCreate,
     EvaluacionOut,
@@ -39,9 +38,11 @@ def _get_evaluacion(db: Session, id_evaluacion: int) -> Evaluacion:
 def list_evaluaciones(
     id_grupo: int | None = None,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> list[Evaluacion]:
-    query = db.query(Evaluacion)
+    query = ctx.scope_evaluaciones(db.query(Evaluacion))
     if id_grupo is not None:
         query = query.filter(Evaluacion.id_grupo == id_grupo)
     return query.order_by(Evaluacion.periodo, Evaluacion.id_evaluacion).all()
@@ -51,9 +52,12 @@ def list_evaluaciones(
 def create_evaluacion(
     payload: EvaluacionCreate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> Evaluacion:
     _ensure_grupo(db, payload.id_grupo)
+    ctx.assert_grupo(payload.id_grupo)
     evaluacion = Evaluacion(**payload.model_dump())
     db.add(evaluacion)
     db.commit()
@@ -66,12 +70,16 @@ def update_evaluacion(
     id_evaluacion: int,
     payload: EvaluacionUpdate,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> Evaluacion:
+    ctx.assert_evaluacion(id_evaluacion)
     evaluacion = _get_evaluacion(db, id_evaluacion)
     data = payload.model_dump(exclude_unset=True)
     if "id_grupo" in data and data["id_grupo"] is not None:
         _ensure_grupo(db, data["id_grupo"])
+        ctx.assert_grupo(data["id_grupo"])
     for field, value in data.items():
         setattr(evaluacion, field, value)
     db.commit()
@@ -83,8 +91,11 @@ def update_evaluacion(
 def delete_evaluacion(
     id_evaluacion: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> None:
+    ctx.assert_evaluacion(id_evaluacion)
     evaluacion = _get_evaluacion(db, id_evaluacion)
     db.delete(evaluacion)
     db.commit()
@@ -94,8 +105,11 @@ def delete_evaluacion(
 def get_notas(
     id_evaluacion: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> NotasRosterOut:
+    ctx.assert_evaluacion(id_evaluacion)
     evaluacion = _get_evaluacion(db, id_evaluacion)
 
     estudiantes = (
@@ -133,8 +147,11 @@ def save_notas(
     id_evaluacion: int,
     payload: NotasBatchIn,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> NotasRosterOut:
+    ctx.assert_evaluacion(id_evaluacion)
     evaluacion = _get_evaluacion(db, id_evaluacion)
 
     estudiantes_validos = {
@@ -171,4 +188,4 @@ def save_notas(
             actual.valor = registro.valor
 
     db.commit()
-    return get_notas(id_evaluacion, db=db, _=_)
+    return get_notas(id_evaluacion, db=db, ctx=ctx)

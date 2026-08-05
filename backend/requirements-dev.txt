@@ -1,0 +1,6 @@
+# Dependencias solo para desarrollo y pruebas (NO se instalan en la imagen de
+# produccion). Instalar dentro del contenedor backend con:
+#   docker compose exec backend pip install -r requirements-dev.txt
+-r requirements.txt
+pytest==8.3.4
+httpx==0.28.1

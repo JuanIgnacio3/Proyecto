@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api import authz
 from app.api.deps import require_roles
 from app.core.security import get_password_hash
 from app.db.session import get_db
@@ -20,11 +21,16 @@ def list_estudiantes(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.STUDENT,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> list[Estudiante]:
+    query = ctx.scope_estudiantes(db.query(Estudiante))
     return (
-        db.query(Estudiante)
-        .order_by(Estudiante.id_estudiante)
+        query.order_by(Estudiante.id_estudiante)
         .offset(skip)
         .limit(min(limit, 200))
         .all()
@@ -79,8 +85,14 @@ def create_estudiante(
 def get_estudiante(
     id_estudiante: int,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.STUDENT,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> Estudiante:
+    ctx.assert_estudiante(id_estudiante)
     estudiante = db.get(Estudiante, id_estudiante)
     if estudiante is None:
         raise HTTPException(

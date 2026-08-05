@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.api import authz
 from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.asignatura import Asignatura
@@ -26,9 +27,15 @@ def _ensure_asignatura(db: Session, id_asignatura: int) -> None:
 @router.get("/", response_model=list[GrupoOut])
 def list_grupos(
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor", "Administrativo")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(
+            authz.Policy.GROUP,
+            roles=("Administrador", "Profesor", "Administrativo"),
+        )
+    ),
 ) -> list[Grupo]:
-    return db.query(Grupo).order_by(Grupo.id_grupo).all()
+    query = ctx.scope_grupos(db.query(Grupo))
+    return query.order_by(Grupo.id_grupo).all()
 
 
 @router.post("/", response_model=GrupoOut, status_code=status.HTTP_201_CREATED)
@@ -101,4 +108,13 @@ def delete_grupo(
         )
 
     db.delete(grupo)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        # Red de seguridad ante otras referencias (asistencia, evaluaciones, etc.):
+        # devuelve un 409 claro en lugar de un 500.
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No se puede eliminar: el grupo tiene registros asociados",
+        ) from exc

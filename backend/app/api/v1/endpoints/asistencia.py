@@ -3,12 +3,11 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import require_roles
+from app.api import authz
 from app.db.session import get_db
 from app.models.asistencia import Asistencia
 from app.models.estudiante import Estudiante
 from app.models.grupo import Grupo
-from app.models.usuario import Usuario
 from app.schemas.asistencia import AsistenciaBatchIn, AsistenciaRosterOut
 
 router = APIRouter()
@@ -26,9 +25,12 @@ def get_roster(
     id_grupo: int,
     fecha: date,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> AsistenciaRosterOut:
     _ensure_grupo(db, id_grupo)
+    ctx.assert_grupo(id_grupo)
 
     estudiantes = (
         db.query(Estudiante)
@@ -63,9 +65,12 @@ def get_roster(
 def save_roster(
     payload: AsistenciaBatchIn,
     db: Session = Depends(get_db),
-    _: Usuario = Depends(require_roles("Administrador", "Profesor")),
+    ctx: authz.AuthzContext = Depends(
+        authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
+    ),
 ) -> AsistenciaRosterOut:
     _ensure_grupo(db, payload.id_grupo)
+    ctx.assert_grupo(payload.id_grupo)
 
     estudiantes_validos = {
         e.id_estudiante
@@ -104,4 +109,4 @@ def save_roster(
 
     db.commit()
 
-    return get_roster(payload.id_grupo, payload.fecha, db=db, _=_)
+    return get_roster(payload.id_grupo, payload.fecha, db=db, ctx=ctx)
