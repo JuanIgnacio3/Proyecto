@@ -4,7 +4,7 @@ Sistema de gestión escolar con **tres superficies claramente separadas**: un **
 
 No es un CRUD: la decisión central del diseño es una **frontera público/privado aplicada por construcción** — el contenido nunca aparece en público por accidente y la API pública no puede exponer datos internos.
 
-![license](https://img.shields.io/badge/license-MIT-blue) ![backend](https://img.shields.io/badge/backend-FastAPI-009688) ![frontend](https://img.shields.io/badge/frontend-React%2019-61dafb) ![db](https://img.shields.io/badge/db-PostgreSQL%2016-336791)
+[![CI](https://github.com/JuanIgnacio3/Proyecto/actions/workflows/ci.yml/badge.svg)](https://github.com/JuanIgnacio3/Proyecto/actions/workflows/ci.yml) ![license](https://img.shields.io/badge/license-MIT-blue) ![backend](https://img.shields.io/badge/backend-FastAPI-009688) ![frontend](https://img.shields.io/badge/frontend-React%2019-61dafb) ![db](https://img.shields.io/badge/db-PostgreSQL%2016-336791)
 
 > **Estado:** v1.0.0 — funcionalmente completo y auditado. Lo pendiente para un despliegue real es **externo** (contenido e imágenes del colegio, dominio, TLS); ver [Alcance y limitaciones](#alcance-y-limitaciones).
 
