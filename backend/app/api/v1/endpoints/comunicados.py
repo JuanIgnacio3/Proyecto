@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.api.deps import get_current_user, require_roles
 from app.db.session import get_db
@@ -30,6 +30,8 @@ def _serialize(c: Comunicado) -> dict:
         "titulo": c.titulo,
         "cuerpo": c.cuerpo,
         "dirigido_a": c.dirigido_a,
+        "es_publico": c.es_publico,
+        "categoria": c.categoria,
         "fecha_publicacion": c.fecha_publicacion,
         "id_autor": c.id_autor,
         "autor_correo": c.autor.correo_institucional if c.autor else "",
@@ -50,7 +52,7 @@ def list_comunicados(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> list[dict]:
-    query = db.query(Comunicado)
+    query = db.query(Comunicado).options(joinedload(Comunicado.autor))
 
     rol = current_user.rol.name_rol
     if rol not in ROLES_GESTION:
@@ -77,6 +79,8 @@ def create_comunicado(
         titulo=payload.titulo,
         cuerpo=payload.cuerpo,
         dirigido_a=payload.dirigido_a,
+        es_publico=payload.es_publico,
+        categoria=payload.categoria,
         id_autor=current_user.id_usuario,
     )
     db.add(comunicado)

@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import Date, String, Text
+from sqlalchemy import Boolean, Date, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base_class import Base
@@ -15,3 +15,8 @@ class Evento(Base):
     fecha_inicio: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     fecha_fin: Mapped[date | None] = mapped_column(Date, nullable=True)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False)
+    # Visibilidad en el sitio publico (opt-in). Por defecto FALSE: ningun evento
+    # se hace publico automaticamente. Distinto de `tipo` (categoria interna).
+    es_publico: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=text("false")
+    )
