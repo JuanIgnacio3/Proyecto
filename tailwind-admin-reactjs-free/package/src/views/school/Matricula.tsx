@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState } from 'react';
 import CardBox from 'src/components/shared/CardBox';
+import { useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import { Label } from 'src/components/ui/label';
 import { ApiError } from 'src/lib/api';
@@ -18,6 +19,7 @@ const inputClass =
   'flex h-10 w-full border border-ld rounded-lg bg-transparent px-3 py-2 text-sm text-ld focus-visible:border-primary focus-visible:outline-0';
 
 const Matricula = () => {
+  const { confirm } = useConfirm();
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
@@ -89,7 +91,14 @@ const Matricula = () => {
   };
 
   const handleRetirar = async (est: EstudianteMatricula) => {
-    if (!confirm(`Retirar a ${est.name_estudiante} ${est.sec_name_estudiante} del grupo?`)) return;
+    if (
+      !(await confirm({
+        title: `Retirar a ${est.name_estudiante} ${est.sec_name_estudiante} del grupo?`,
+        confirmLabel: 'Retirar',
+        destructive: true,
+      }))
+    )
+      return;
     setError(null);
     setMensaje(null);
     try {

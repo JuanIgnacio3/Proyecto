@@ -8,6 +8,7 @@ import {
   PageHeader,
   RowActions,
   SectionCard,
+  useConfirm,
   type Column,
 } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
@@ -25,6 +26,7 @@ import type { Asignatura } from 'src/types/asignatura';
 
 const Materias = () => {
   const { user } = useAuth();
+  const { confirm, notify } = useConfirm();
   const isAdmin = user?.rol.name_rol === 'Administrador';
 
   const [asignaturas, setAsignaturas] = useState<Asignatura[]>([]);
@@ -79,12 +81,19 @@ const Materias = () => {
   };
 
   const handleDelete = async (asignatura: Asignatura) => {
-    if (!confirm(`Eliminar la materia "${asignatura.name_asignatura}"?`)) return;
+    if (
+      !(await confirm({
+        title: `Eliminar la materia "${asignatura.name_asignatura}"?`,
+        confirmLabel: 'Eliminar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await deleteAsignatura(asignatura.id_asignatura);
       await loadAsignaturas();
     } catch (err) {
-      alert(getErrorMessage(err, 'No se pudo eliminar.'));
+      await notify(getErrorMessage(err, 'No se pudo eliminar.'));
     }
   };
 

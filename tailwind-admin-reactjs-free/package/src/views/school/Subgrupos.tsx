@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
+import { useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -33,6 +34,7 @@ const inputClass =
 
 const Subgrupos = () => {
   const { user } = useAuth();
+  const { confirm, notify } = useConfirm();
   const isAdmin = user?.rol.name_rol === 'Administrador';
 
   const [subgrupos, setSubgrupos] = useState<Subgrupo[]>([]);
@@ -134,12 +136,19 @@ const Subgrupos = () => {
   };
 
   const handleDelete = async (sg: Subgrupo) => {
-    if (!confirm(`Eliminar el subgrupo "${sg.name_subgrupo}"?`)) return;
+    if (
+      !(await confirm({
+        title: `Eliminar el subgrupo "${sg.name_subgrupo}"?`,
+        confirmLabel: 'Eliminar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await deleteSubgrupo(sg.id_subgrupo);
       await loadSubgrupos();
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
     }
   };
 

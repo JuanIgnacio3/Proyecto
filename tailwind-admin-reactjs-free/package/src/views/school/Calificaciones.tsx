@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
+import { useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -38,6 +39,7 @@ type NotaRow = {
 
 const Calificaciones = () => {
   const { user } = useAuth();
+  const { confirm, notify } = useConfirm();
   const canEdit = user?.rol.name_rol === 'Administrador' || user?.rol.name_rol === 'Profesor';
 
   const [grupos, setGrupos] = useState<Grupo[]>([]);
@@ -136,12 +138,19 @@ const Calificaciones = () => {
   };
 
   const handleDelete = async (ev: Evaluacion) => {
-    if (!confirm(`Eliminar la evaluacion "${ev.name_evaluacion}" y sus notas?`)) return;
+    if (
+      !(await confirm({
+        title: `Eliminar la evaluacion "${ev.name_evaluacion}" y sus notas?`,
+        confirmLabel: 'Eliminar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await deleteEvaluacion(ev.id_evaluacion);
       await loadEvaluaciones(idGrupo);
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
     }
   };
 
