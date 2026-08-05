@@ -15,14 +15,11 @@ const PublicHome = Loadable(lazy(() => import('../views/public/Home')));
 
 const Login2 = Loadable(lazy(() => import('../views/authentication/auth2/Login')));
 
-const Register2 = Loadable(lazy(() => import('../views/authentication/auth2/Register')));
-
 const Maintainance = Loadable(lazy(() => import('../views/authentication/Maintainance')));
 
 // Dashboards
 const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 
-const SchoolModulePage = Loadable(lazy(() => import('../views/school/SchoolModulePage')));
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 const Administrativos = Loadable(lazy(() => import('../views/school/Administrativos')));
@@ -36,6 +33,7 @@ const Reportes = Loadable(lazy(() => import('../views/school/Reportes')));
 const Matricula = Loadable(lazy(() => import('../views/school/Matricula')));
 const Comunicados = Loadable(lazy(() => import('../views/school/Comunicados')));
 const Calendario = Loadable(lazy(() => import('../views/school/Calendario')));
+const Especialidades = Loadable(lazy(() => import('../views/school/Especialidades')));
 
 const Error = Loadable(lazy(() => import('../views/authentication/Error')));
 
@@ -65,17 +63,7 @@ const Router = [
           { path: '/matricula', element: <Matricula /> },
           { path: '/comunicados', element: <Comunicados /> },
           { path: '/calendario', element: <Calendario /> },
-          {
-        path: '/configuracion',
-        element: (
-          <SchoolModulePage
-            title="Configuracion"
-            description="Parametros institucionales, roles, permisos, periodos lectivos y ajustes generales."
-            icon="solar:settings-linear"
-            primaryAction="Nuevo ajuste"
-          />
-        ),
-      },
+          { path: '/especialidades', element: <Especialidades /> },
           { path: '*', element: <Navigate to="/auth/404" /> },
         ],
       },
@@ -86,8 +74,6 @@ const Router = [
     element: <BlankLayout />,
     children: [
       { path: '/auth/auth2/login', element: <Login2 /> },
-
-      { path: '/auth/auth2/register', element: <Register2 /> },
 
       { path: '/auth/maintenance', element: <Maintainance /> },
       { path: '404', element: <Error /> },

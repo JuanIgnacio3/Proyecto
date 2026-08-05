@@ -95,11 +95,11 @@ function Search() {
                 </div>
               </Link>
             ))
-          ) : (
+          ) : query.trim() ? (
             <div className="flex items-center justify-center h-full">
-              <h1 className="text-medium font-medium text-foreground">No se encontraron modulos</h1>
+              <p className="text-medium font-medium text-foreground">No se encontraron modulos</p>
             </div>
-          )}
+          ) : null}
         </SimpleBar>
       </div>
     </div>

@@ -3,13 +3,16 @@ import router from './routes/Router';
 import './css/globals.css';
 import { ThemeProvider } from './components/provider/theme-provider';
 import { AuthProvider } from './context/auth-context';
+import { ConfirmProvider } from './components/institutional';
 
 function App() {
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <AuthProvider>
-          <RouterProvider router={router} />
+          <ConfirmProvider>
+            <RouterProvider router={router} />
+          </ConfirmProvider>
         </AuthProvider>
       </ThemeProvider>
     </>

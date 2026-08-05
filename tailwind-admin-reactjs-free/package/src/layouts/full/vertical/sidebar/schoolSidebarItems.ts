@@ -92,6 +92,12 @@ const SchoolSidebarContent: MenuItem[] = [
         url: '/materias',
       },
       {
+        id: 'specialties',
+        name: 'Especialidades',
+        icon: 'solar:medal-ribbons-star-linear',
+        url: '/especialidades',
+      },
+      {
         id: 'attendance',
         name: 'Asistencia',
         icon: 'solar:checklist-minimalistic-linear',
@@ -119,12 +125,6 @@ const SchoolSidebarContent: MenuItem[] = [
         name: 'Reportes',
         icon: 'solar:chart-square-linear',
         url: '/reportes',
-      },
-      {
-        id: 'settings',
-        name: 'Configuracion',
-        icon: 'solar:settings-linear',
-        url: '/configuracion',
       },
     ],
   },

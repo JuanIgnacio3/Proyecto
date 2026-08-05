@@ -1,36 +1,29 @@
-import { Link } from "react-router";
-import CardBox from "src/components/shared/CardBox";
-
-import AuthLogin from "../authforms/AuthLogin";
-import SocialButtons from "../authforms/SocialButtons";
-
-import FullLogo from "src/layouts/full/shared/logo/FullLogo";
-
+import { Link } from 'react-router';
+import CardBox from 'src/components/shared/CardBox';
+import AuthLogin from '../authforms/AuthLogin';
+import FullLogo from 'src/layouts/full/shared/logo/FullLogo';
 
 const Login = () => {
   return (
-    <>
-      <div className="relative overflow-hidden h-screen bg-lightprimary dark:bg-darkprimary">
-        <div className="flex h-full justify-center items-center px-4">
-          <CardBox className="md:w-[450px] w-full border-none">
-            <div className="mx-auto mb-6">
-              <FullLogo />
-            </div>
-            <SocialButtons title="or sign in with" />
-            <AuthLogin />
-            <div className="flex gap-2 text-base text-ld font-medium mt-6 items-center justify-center">
-              <p>New to TailwindAdmin?</p>
-              <Link
-                to={"/auth/auth2/register"}
-                className="text-primary text-sm font-medium"
-              >
-                Create an account
-              </Link>
-            </div>
-          </CardBox>
+    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-lightprimary px-4 dark:bg-darkprimary">
+      <CardBox className="w-full border-none md:w-[450px]">
+        <div className="mx-auto mb-6 flex justify-center">
+          <FullLogo />
         </div>
-      </div>
-    </>
+        <div className="mb-2 text-center">
+          <h1 className="text-xl font-semibold">Portal institucional</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Ingresá con tu correo institucional para acceder al panel.
+          </p>
+        </div>
+        <AuthLogin />
+        <div className="mt-6 text-center">
+          <Link to="/inicio" className="text-sm font-medium text-primary">
+            Volver al sitio del colegio
+          </Link>
+        </div>
+      </CardBox>
+    </div>
   );
 };
 

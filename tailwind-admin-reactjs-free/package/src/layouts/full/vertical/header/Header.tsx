@@ -7,6 +7,7 @@ import { useTheme } from 'src/components/provider/theme-provider';
 import { Sheet, SheetContent, SheetTitle } from 'src/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Search from './Search';
+import Profile from './Profile';
 
 const Header = () => {
   const { theme, setTheme } = useTheme();
@@ -80,20 +81,12 @@ const Header = () => {
               >
                 <Icon icon={theme === 'light' ? 'tabler:moon' : 'solar:sun-bold-duotone'} width="20" />
               </button>
-              <div className="flex items-center gap-3 rounded-md border border-ld px-3 py-2">
-                <div className="flex size-8 items-center justify-center rounded-full bg-lightprimary text-sm font-semibold text-primary">
-                  A
-                </div>
-                <div className="leading-tight">
-                  <p className="text-sm font-semibold">Administracion</p>
-                  <p className="text-xs text-muted-foreground">Rol temporal</p>
-                </div>
-              </div>
+              <Profile />
             </div>
           </div>
           {/* Mobile Toggle Icon */}
-          <span className="flex xl:hidden ">
-            <div className="xl:hidden flex w-full">
+          <span className="flex xl:hidden items-center gap-2">
+            <div className="xl:hidden flex">
               <div className="flex justify-center items-center">
                 {theme === 'light' ? (
                   <div
@@ -121,6 +114,7 @@ const Header = () => {
                 )}
               </div>
             </div>
+            <Profile />
           </span>
         </nav>
       </header>

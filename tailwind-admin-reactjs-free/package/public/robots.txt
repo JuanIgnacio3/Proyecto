@@ -2,5 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /auth/
 
-# PENDIENTE: reemplazar DOMINIO_OFICIAL por el dominio definitivo cuando se confirme.
-Sitemap: https://DOMINIO_OFICIAL/sitemap.xml
+# La linea "Sitemap:" y el archivo sitemap.xml se agregan al definir el dominio
+# oficial (requieren URL absoluta). Ver docs/DEPLOYMENT.md > "SEO / dominio".

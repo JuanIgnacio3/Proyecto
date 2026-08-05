@@ -1,82 +1,63 @@
-'use client';
-
 import { Icon } from '@iconify/react';
-import * as profileData from './data';
-import SimpleBar from 'simplebar-react';
-import { Link, useNavigate } from 'react-router';
-import profileimg from 'src/assets/images/profile/user-1.jpg';
+import { useNavigate } from 'react-router';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
 import { Button } from 'src/components/ui/button';
 import { useAuth } from 'src/context/auth-context';
 
+/** Menu de usuario del panel: identidad real (rol + correo) y cierre de sesion. */
 const Profile = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/auth/auth2/login');
+    navigate('/inicio');
   };
 
+  const correo = user?.correo_institucional ?? '';
+  const rol = user?.rol.name_rol ?? 'Usuario';
+  const inicial = (correo.charAt(0) || 'U').toUpperCase();
+
   return (
-    <div className="relative group/menu ps-1 sm:ps-15 shrink-0">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <span className="hover:text-primary hover:bg-lightprimary rounded-full flex justify-center items-center cursor-pointer group-hover/menu:bg-lightprimary group-hover/menu:text-primary">
-            <img src={profileimg} alt="logo" height="35" width="35" className="rounded-full" />
-          </span>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent
-          align="end"
-          className="w-screen sm:w-[200px] pb-6 pt-4 rounded-sm"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-md border border-ld px-3 py-2 hover:bg-lightprimary"
+          aria-label="Menu de usuario"
         >
-          <SimpleBar>
-            {profileData.profileDD.map((items, index) => (
-              <DropdownMenuItem
-                key={index}
-                asChild
-                className="px-4 py-2 flex justify-between items-center bg-hover group/link w-full cursor-pointer"
-              >
-                <Link to={items.url}>
-                  <div className="w-full">
-                    <div className="ps-0 flex items-center gap-3 w-full">
-                      <Icon
-                        icon={items.icon}
-                        className="text-lg text-muted-foreground group-hover/link:text-primary"
-                      />
-                      <div className="w-3/4">
-                        <h5 className="mb-0 text-sm text-muted-foreground group-hover/link:text-primary">
-                          {items.title}
-                        </h5>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </SimpleBar>
+          <span className="flex size-8 items-center justify-center rounded-full bg-lightprimary text-sm font-semibold text-primary">
+            {inicial}
+          </span>
+          <span className="hidden text-left leading-tight sm:block">
+            <span className="block text-sm font-semibold">{rol}</span>
+            <span className="block max-w-[160px] truncate text-xs text-muted-foreground">
+              {correo}
+            </span>
+          </span>
+          <Icon icon="solar:alt-arrow-down-linear" width={16} className="text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
 
-          <DropdownMenuSeparator className='my-2' />
-
-          <div className="pt-2 px-4">
-            <Button
-              variant="outline"
-              className="w-full rounded-md"
-              onClick={handleLogout}
-            >
-              Cerrar sesion
-            </Button>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+      <DropdownMenuContent align="end" className="w-[220px] p-2">
+        <div className="px-2 py-1.5">
+          <p className="text-sm font-semibold">{rol}</p>
+          <p className="truncate text-xs text-muted-foreground">{correo}</p>
+        </div>
+        <DropdownMenuSeparator />
+        <div className="pt-2">
+          <Button variant="outline" className="w-full rounded-md" onClick={handleLogout}>
+            <Icon icon="solar:logout-2-linear" width={16} />
+            Cerrar sesion
+          </Button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

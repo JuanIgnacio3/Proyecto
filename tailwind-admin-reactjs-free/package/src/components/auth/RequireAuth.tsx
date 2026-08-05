@@ -8,7 +8,9 @@ const RequireAuth = () => {
   const location = useLocation();
 
   if (loading) return <Spinner />;
-  if (!isAuthenticated) return <Navigate to="/auth/auth2/login" replace />;
+  // Un visitante sin sesion ve primero el sitio institucional; el acceso al
+  // panel se hace desde el boton "Ingresar" del sitio publico.
+  if (!isAuthenticated) return <Navigate to="/inicio" replace />;
 
   const role = user?.rol.name_rol;
   if (!canAccess(role, location.pathname)) {

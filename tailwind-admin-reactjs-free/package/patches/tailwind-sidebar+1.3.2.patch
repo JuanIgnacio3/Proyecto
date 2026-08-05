@@ -1,0 +1,21 @@
+diff --git a/node_modules/tailwind-sidebar/dist/index.es.js b/node_modules/tailwind-sidebar/dist/index.es.js
+index fecd5cd..3886403 100644
+--- a/node_modules/tailwind-sidebar/dist/index.es.js
++++ b/node_modules/tailwind-sidebar/dist/index.es.js
+@@ -6994,7 +6994,7 @@ const cu = ({
+   showTrigger: E = !1
+ }) => {
+   const S = o ? n : t;
+-  return console.log(a), rr(() => {
++  return rr(() => {
+     document.documentElement.style.setProperty("--lightprimary", `${s}2a`), document.documentElement.style.setProperty("--sidebar-primary", s), document.documentElement.style.setProperty("--sidebar-txtclr", r);
+   }, [s]), /* @__PURE__ */ p.jsx(
+     ke.Provider,
+@@ -7148,7 +7148,6 @@ const Yc = "_shadcn_menu_item_1385i_1", Xc = {
+ }) => {
+   const x = gt.useContext(ke), y = x?.isCollapse, { animation: E } = Zt(ke);
+   return rr(() => {
+-    console.log(v, "My Menu item classname ");
+   }, [v]), /* @__PURE__ */ p.jsx(Oo, { children: /* @__PURE__ */ p.jsx(To, { children: /* @__PURE__ */ p.jsx(No, { children: /* @__PURE__ */ p.jsx(jo, { to: f, component: n, target: g, children: /* @__PURE__ */ p.jsx(_o, { asChild: !0, variant: m, size: b, isActive: h, children: /* @__PURE__ */ p.jsxs(
+     "div",
+     {
