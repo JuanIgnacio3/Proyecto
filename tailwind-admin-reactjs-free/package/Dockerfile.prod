@@ -1,0 +1,29 @@
+# Imagen de produccion del frontend (React + Vite).
+# Multi-stage: se compila con Node y se sirve el build estatico con Nginx.
+# Este Nginx es ademas el reverse proxy de produccion (enruta /api -> backend).
+
+# --- Etapa 1: build ---
+FROM node:20-alpine AS build
+WORKDIR /app
+
+COPY package*.json ./
+# Se usa `npm install` (no `npm ci`) porque el package-lock.json esta
+# desincronizado con package.json (ej.: falta stylis, dep transitiva). Para
+# habilitar `npm ci` reproducible, primero sincronizar el lock con `npm install`.
+RUN npm install --no-audit --no-fund
+
+COPY . .
+
+# La app llama a la API por ruta RELATIVA (mismo origen); el proxy enruta /api.
+# api.ts usa VITE_API_URL como base y publicApi.ts la deriva a /api/public/v1.
+ARG VITE_API_URL=/api/v1
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
+
+# --- Etapa 2: servidor estatico + reverse proxy ---
+FROM nginx:1.27-alpine
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+# 443 se habilita al montar certificados (ver deploy/nginx.conf y docs/DEPLOYMENT.md).
