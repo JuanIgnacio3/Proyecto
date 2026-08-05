@@ -27,6 +27,7 @@ const ACCESO: Record<string, Acceso> = {
     '/reportes',
     '/comunicados',
     '/calendario',
+    '/especialidades',
   ],
   Encargado: ['/reportes', '/comunicados', '/calendario'],
   Estudiante: ['/reportes', '/comunicados', '/calendario'],
@@ -51,6 +52,13 @@ const ROLES_GESTION_CALENDARIO = ['Administrador', 'Administrativo'];
 
 export function canManageCalendario(role: string | undefined): boolean {
   return !!role && ROLES_GESTION_CALENDARIO.includes(role);
+}
+
+// Roles que pueden crear/editar especialidades del sitio publico.
+const ROLES_GESTION_ESPECIALIDADES = ['Administrador', 'Administrativo'];
+
+export function canManageEspecialidades(role: string | undefined): boolean {
+  return !!role && ROLES_GESTION_ESPECIALIDADES.includes(role);
 }
 
 export function canAccess(role: string | undefined, path: string): boolean {
