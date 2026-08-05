@@ -1,3 +1,6 @@
+import logging
+import os
+
 from app.core.security import get_password_hash
 from app.db.session import SessionLocal
 from app.models.asignatura import Asignatura
@@ -6,10 +9,16 @@ from app.models.rol import Rol
 from app.models.tipo_documento import TipoDocumento
 from app.models.usuario import Usuario
 
+logger = logging.getLogger("app.seed")
+
 BASE_ROLES = ["Administrador", "Profesor", "Estudiante", "Encargado", "Administrativo"]
 BASE_TIPOS_DOCUMENTO = ["Cedula de identidad", "DIMEX", "Cedula de residencia", "Pasaporte"]
-ADMIN_EMAIL = "admin@ctpsanpedrodebarva.ed.cr"
-ADMIN_PASSWORD = "ChangeMe123!"
+
+# Credenciales del administrador inicial. Configurables por entorno para no
+# incrustar contrasenas en el codigo: en produccion defina SEED_ADMIN_EMAIL y
+# SEED_ADMIN_PASSWORD antes de ejecutar el seed.
+ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL", "admin@ctpsanpedrodebarva.ed.cr")
+ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", "ChangeMe123!")
 
 
 def seed() -> None:
@@ -52,10 +61,16 @@ def seed() -> None:
             db.add(admin)
 
         db.commit()
-        print(f"Seed OK. Admin: {ADMIN_EMAIL} / password: {ADMIN_PASSWORD}")
+        logger.info("Seed completado. Administrador inicial: %s", ADMIN_EMAIL)
+        if ADMIN_PASSWORD == "ChangeMe123!":
+            logger.warning(
+                "El administrador usa la contrasena por defecto. Cambiela de "
+                "inmediato o defina SEED_ADMIN_PASSWORD antes del seed."
+            )
     finally:
         db.close()
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s")
     seed()
