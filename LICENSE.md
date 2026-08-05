@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2026 Tailwindadmin
+Copyright (c) 2026 Juan Ignacio Vargas Ramírez — Sistema Institucional CTP San Pedro de Barva
+Portions Copyright (c) 2026 Tailwindadmin (base de plantilla de UI, MIT)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
