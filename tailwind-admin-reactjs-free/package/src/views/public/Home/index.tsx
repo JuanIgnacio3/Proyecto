@@ -3,6 +3,7 @@ import Historia from './sections/Historia';
 import Especialidades from './sections/Especialidades';
 import VidaEstudiantil from './sections/VidaEstudiantil';
 import Noticias from './sections/Noticias';
+import Calendario from './sections/Calendario';
 import Admision from './sections/Admision';
 import Contacto from './sections/Contacto';
 
@@ -18,6 +19,7 @@ const Home = () => (
     <Especialidades />
     <VidaEstudiantil />
     <Noticias />
+    <Calendario />
     <Admision />
     <Contacto />
   </>
