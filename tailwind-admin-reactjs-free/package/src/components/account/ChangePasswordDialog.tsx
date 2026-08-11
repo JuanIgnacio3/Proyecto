@@ -49,6 +49,10 @@ const ChangePasswordDialog = ({ open, onOpenChange }: Props) => {
       setError(`La nueva contrasena debe tener al menos ${MIN_LEN} caracteres.`);
       return;
     }
+    if (!/[a-zA-Z]/.test(next) || !/[0-9]/.test(next)) {
+      setError('La nueva contrasena debe incluir al menos una letra y un numero.');
+      return;
+    }
     if (next !== confirm) {
       setError('La confirmacion no coincide con la nueva contrasena.');
       return;
@@ -109,6 +113,9 @@ const ChangePasswordDialog = ({ open, onOpenChange }: Props) => {
                 required
                 minLength={MIN_LEN}
               />
+              <p className="text-xs text-muted-foreground">
+                Minimo {MIN_LEN} caracteres, con al menos una letra y un numero.
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cp-confirm">Confirmar nueva contrasena</Label>

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api import authz
 from app.api.deps import require_roles
+from app.core.passwords import assert_password_ok
 from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.estudiante import Estudiante
@@ -50,6 +51,7 @@ def create_estudiante(
             detail="El rol 'Estudiante' no existe todavia, ejecute el seed primero",
         )
 
+    assert_password_ok(payload.password)
     usuario = Usuario(
         correo_institucional=payload.correo_institucional,
         id_rol=rol_estudiante.id_rol,

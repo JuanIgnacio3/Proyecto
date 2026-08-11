@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_roles
+from app.core.passwords import assert_password_ok
 from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.profesor import Profesor
@@ -44,6 +45,7 @@ def create_profesor(
             detail="El rol 'Profesor' no existe todavia, ejecute el seed primero",
         )
 
+    assert_password_ok(payload.password)
     usuario = Usuario(
         correo_institucional=payload.correo_institucional,
         id_rol=rol_profesor.id_rol,

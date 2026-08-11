@@ -52,3 +52,32 @@ def test_cambio_ok_y_relogin(client, admin_headers, data):
     # la nueva contrasena funciona; la anterior ya no
     assert client.post(f"{API}/auth/login", data={"username": email, "password": NUEVA}).status_code == 200
     assert client.post(f"{API}/auth/login", data={"username": email, "password": TEST_PASSWORD}).status_code == 401
+
+
+def test_complejidad_sin_numero_400(client, admin_headers):
+    r = client.put(
+        f"{API}/auth/me/password",
+        json={"current_password": TEST_PASSWORD, "new_password": "SoloLetrasSinNumero"},
+        headers=admin_headers,
+    )
+    assert r.status_code == 400
+
+
+def test_complejidad_sin_letra_400(client, admin_headers):
+    r = client.put(
+        f"{API}/auth/me/password",
+        json={"current_password": TEST_PASSWORD, "new_password": "12345678901"},
+        headers=admin_headers,
+    )
+    assert r.status_code == 400
+
+
+def test_contrasena_filtrada_400(client, admin_headers, monkeypatch):
+    # simula que HIBP reporta la contrasena como filtrada
+    monkeypatch.setattr("app.core.passwords.is_password_pwned", lambda password: True)
+    r = client.put(
+        f"{API}/auth/me/password",
+        json={"current_password": TEST_PASSWORD, "new_password": NUEVA},
+        headers=admin_headers,
+    )
+    assert r.status_code == 400

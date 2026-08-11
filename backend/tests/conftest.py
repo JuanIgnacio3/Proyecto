@@ -120,6 +120,13 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(autouse=True)
+def _stub_hibp(monkeypatch):
+    """Evita llamadas de red a Have I Been Pwned en los tests. Por defecto ninguna
+    contrasena figura como filtrada; los tests que prueban el rechazo lo sobreescriben."""
+    monkeypatch.setattr("app.core.passwords.is_password_pwned", lambda password: False)
+
+
 # ---------------------------------------------------------------------------
 # Dataset determinista
 # ---------------------------------------------------------------------------

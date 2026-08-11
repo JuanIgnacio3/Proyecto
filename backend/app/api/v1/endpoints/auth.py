@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.passwords import assert_password_ok
 from app.core.ratelimit import login_rate_limit
 from app.core.security import (
     create_access_token,
@@ -62,5 +63,6 @@ def change_my_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="La nueva contrasena debe ser distinta de la actual",
         )
+    assert_password_ok(payload.new_password)
     current_user.hashed_password = get_password_hash(payload.new_password)
     db.commit()

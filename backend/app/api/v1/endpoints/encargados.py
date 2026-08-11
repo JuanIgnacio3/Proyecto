@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api import authz
 from app.api.deps import require_roles
+from app.core.passwords import assert_password_ok
 from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.encargado import Encargado
@@ -70,6 +71,7 @@ def create_encargado(
 
     _validate_estudiantes(db, payload.estudiantes_ids)
 
+    assert_password_ok(payload.password)
     usuario = Usuario(
         correo_institucional=payload.correo_institucional,
         id_rol=rol_encargado.id_rol,
