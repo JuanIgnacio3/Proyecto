@@ -1,20 +1,6 @@
 const API_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000/api/v1';
 
-const TOKEN_KEY = 'tcu_access_token';
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token);
-}
-
-export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
 export class ApiError extends Error {
   status: number;
 
@@ -35,17 +21,11 @@ type RequestOptions = {
   body?: unknown;
   /** Cuando es true, envia el cuerpo como form-urlencoded (para el login OAuth2). */
   form?: boolean;
-  auth?: boolean;
 };
 
 async function request<T,>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, form = false, auth = true } = options;
+  const { method = 'GET', body, form = false } = options;
   const headers: Record<string, string> = {};
-
-  if (auth) {
-    const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-  }
 
   let payload: BodyInit | undefined;
   if (form && body && typeof body === 'object') {
@@ -56,11 +36,15 @@ async function request<T,>(path: string, options: RequestOptions = {}): Promise<
     payload = JSON.stringify(body);
   }
 
-  const res = await fetch(`${API_URL}${path}`, { method, headers, body: payload });
-
-  if (res.status === 401) {
-    clearToken();
-  }
+  // credentials: 'include' -> el navegador envia y recibe la cookie httpOnly de
+  // sesion. El token nunca se guarda en JavaScript (localStorage), por lo que un
+  // XSS no puede robarlo.
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    headers,
+    body: payload,
+    credentials: 'include',
+  });
 
   if (!res.ok) {
     let detail = `Error ${res.status}`;

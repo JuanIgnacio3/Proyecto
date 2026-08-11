@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
+    # Cookie de sesion httpOnly. COOKIE_SECURE debe ser True en produccion (HTTPS);
+    # en desarrollo (HTTP) se deja False para que el navegador la envie.
+    COOKIE_SECURE: bool = False
+    COOKIE_SAMESITE: str = "lax"
+
     # Origenes permitidos por CORS. Cadena separada por comas (se define por
     # entorno). Se expone ya parseada en `cors_origins`. Se guarda como `str`
     # (no `list`) para evitar que pydantic-settings intente decodificarla como JSON.

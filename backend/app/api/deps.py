@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -10,7 +10,13 @@ from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.usuario import Usuario
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_PREFIX}/auth/login")
+# Nombre de la cookie httpOnly que transporta el JWT en el navegador.
+ACCESS_COOKIE_NAME = "access_token"
+
+# auto_error=False: no lanza si falta el header; el token puede venir de la cookie.
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_V1_PREFIX}/auth/login", auto_error=False
+)
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -20,10 +26,17 @@ credentials_exception = HTTPException(
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    request: Request,
+    token: str | None = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
 ) -> Usuario:
+    # Los clientes de API pueden usar el header Bearer; el navegador usa la cookie
+    # httpOnly. El header, si viene, tiene prioridad.
+    raw_token = token or request.cookies.get(ACCESS_COOKIE_NAME)
+    if not raw_token:
+        raise credentials_exception
     try:
-        payload = decode_access_token(token)
+        payload = decode_access_token(raw_token)
         user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception

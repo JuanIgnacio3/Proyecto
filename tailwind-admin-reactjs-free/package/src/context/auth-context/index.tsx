@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { api, clearToken, getToken, setToken } from 'src/lib/api';
+import { api } from 'src/lib/api';
 import type { Usuario } from 'src/types/estudiante';
 
 interface AuthContextValue {
@@ -25,15 +25,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadCurrentUser = useCallback(async () => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
+    // La sesion vive en una cookie httpOnly: no hay token legible por JS, asi que
+    // se consulta /auth/me directamente. Un 401 significa "no autenticado".
     try {
       const me = await api.get<Usuario>('/auth/me');
       setUser(me);
     } catch {
-      clearToken();
       setUser(null);
     } finally {
       setLoading(false);
@@ -45,19 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadCurrentUser]);
 
   const login = useCallback(async (correo: string, password: string) => {
-    const data = await api.post<{ access_token: string }>(
-      '/auth/login',
-      { username: correo, password },
-      { form: true, auth: false },
-    );
-    setToken(data.access_token);
+    // El backend fija la cookie httpOnly de sesion en la respuesta del login.
+    await api.post('/auth/login', { username: correo, password }, { form: true });
     const me = await api.get<Usuario>('/auth/me');
     setUser(me);
     return me;
   }, []);
 
   const logout = useCallback(() => {
-    clearToken();
+    void api.post('/auth/logout').catch(() => {});
     setUser(null);
   }, []);
 
