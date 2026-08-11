@@ -1,5 +1,6 @@
 import SidebarContent from './schoolSidebarItems';
 import SimpleBar from 'simplebar-react';
+import 'simplebar-react/dist/simplebar.min.css';
 import { Icon } from '@iconify/react';
 import FullLogo from '../../shared/logo/FullLogo';
 import { Link, useLocation } from 'react-router';
