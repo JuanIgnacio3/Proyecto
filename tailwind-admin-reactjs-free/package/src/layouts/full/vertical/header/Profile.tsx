@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router';
 import {
@@ -7,12 +8,14 @@ import {
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
 import { Button } from 'src/components/ui/button';
+import ChangePasswordDialog from 'src/components/account/ChangePasswordDialog';
 import { useAuth } from 'src/context/auth-context';
 
-/** Menu de usuario del panel: identidad real (rol + correo) y cierre de sesion. */
+/** Menu de usuario: identidad (rol + correo), cambio de contrasena y logout. */
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [passwordOpen, setPasswordOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -24,6 +27,7 @@ const Profile = () => {
   const inicial = (correo.charAt(0) || 'U').toUpperCase();
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -50,7 +54,15 @@ const Profile = () => {
           <p className="truncate text-xs text-muted-foreground">{correo}</p>
         </div>
         <DropdownMenuSeparator />
-        <div className="pt-2">
+        <div className="space-y-2 pt-2">
+          <Button
+            variant="outline"
+            className="w-full rounded-md"
+            onClick={() => setPasswordOpen(true)}
+          >
+            <Icon icon="solar:lock-password-linear" width={16} />
+            Cambiar contrasena
+          </Button>
           <Button variant="outline" className="w-full rounded-md" onClick={handleLogout}>
             <Icon icon="solar:logout-2-linear" width={16} />
             Cerrar sesion
@@ -58,6 +70,9 @@ const Profile = () => {
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <ChangePasswordDialog open={passwordOpen} onOpenChange={setPasswordOpen} />
+    </>
   );
 };
 
