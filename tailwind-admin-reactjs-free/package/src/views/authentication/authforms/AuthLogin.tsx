@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from 'src/components/ui/button';
 import { Input } from 'src/components/ui/input';
+import { PasswordInput } from 'src/components/ui/password-input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
@@ -58,11 +59,11 @@ const AuthLogin = () => {
         <div className="mb-2 block">
           <Label htmlFor="userpwd">Contrasena</Label>
         </div>
-        <Input
+        <PasswordInput
           id="userpwd"
-          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
           required
         />
       </div>

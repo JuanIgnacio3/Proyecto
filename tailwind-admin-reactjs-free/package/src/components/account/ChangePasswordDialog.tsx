@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from 'src/components/ui/dialog';
 import { Button } from 'src/components/ui/button';
-import { Input } from 'src/components/ui/input';
+import { PasswordInput } from 'src/components/ui/password-input';
 import { Label } from 'src/components/ui/label';
 import { api, getErrorMessage } from 'src/lib/api';
 
@@ -91,9 +91,8 @@ const ChangePasswordDialog = ({ open, onOpenChange }: Props) => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="cp-current">Contrasena actual</Label>
-              <Input
+              <PasswordInput
                 id="cp-current"
-                type="password"
                 autoComplete="current-password"
                 value={current}
                 onChange={(e) => setCurrent(e.target.value)}
@@ -102,9 +101,8 @@ const ChangePasswordDialog = ({ open, onOpenChange }: Props) => {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cp-next">Nueva contrasena</Label>
-              <Input
+              <PasswordInput
                 id="cp-next"
-                type="password"
                 autoComplete="new-password"
                 value={next}
                 onChange={(e) => setNext(e.target.value)}
@@ -114,9 +112,8 @@ const ChangePasswordDialog = ({ open, onOpenChange }: Props) => {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="cp-confirm">Confirmar nueva contrasena</Label>
-              <Input
+              <PasswordInput
                 id="cp-confirm"
-                type="password"
                 autoComplete="new-password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
