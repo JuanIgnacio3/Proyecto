@@ -16,3 +16,7 @@ export function updateGrupo(id: number, payload: GrupoInput): Promise<Grupo> {
 export function deleteGrupo(id: number): Promise<void> {
   return api.del<void>(`/grupos/${id}`);
 }
+
+export function activateGrupo(id: number): Promise<Grupo> {
+  return api.put<Grupo>(`/grupos/${id}`, { activo: true });
+}

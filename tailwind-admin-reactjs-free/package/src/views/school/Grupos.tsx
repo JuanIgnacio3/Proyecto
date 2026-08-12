@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
-import { useConfirm } from 'src/components/institutional';
+import { StatusBadge, useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -14,7 +14,7 @@ import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
 import { listAsignaturas } from 'src/lib/asignaturas';
-import { createGrupo, deleteGrupo, listGrupos, updateGrupo } from 'src/lib/grupos';
+import { activateGrupo, createGrupo, deleteGrupo, listGrupos, updateGrupo } from 'src/lib/grupos';
 import type { Asignatura } from 'src/types/asignatura';
 import type { Grupo } from 'src/types/grupo';
 
@@ -99,11 +99,11 @@ const Grupos = () => {
     }
   };
 
-  const handleDelete = async (grupo: Grupo) => {
+  const handleDeactivate = async (grupo: Grupo) => {
     if (
       !(await confirm({
-        title: `Eliminar el grupo "${grupo.name_grupo}"?`,
-        confirmLabel: 'Eliminar',
+        title: `Desactivar el grupo "${grupo.name_grupo}"?`,
+        confirmLabel: 'Desactivar',
         destructive: true,
       }))
     )
@@ -112,7 +112,16 @@ const Grupos = () => {
       await deleteGrupo(grupo.id_grupo);
       await loadGrupos();
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (grupo: Grupo) => {
+    try {
+      await activateGrupo(grupo.id_grupo);
+      await loadGrupos();
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -171,6 +180,7 @@ const Grupos = () => {
                     <th className="px-6 py-3 text-sm font-semibold">#</th>
                     <th className="px-6 py-3 text-sm font-semibold">Grupo</th>
                     <th className="px-6 py-3 text-sm font-semibold">Materia</th>
+                    <th className="px-6 py-3 text-sm font-semibold">Estado</th>
                     {isAdmin && <th className="px-6 py-3 text-sm font-semibold text-right">Acciones</th>}
                   </tr>
                 </thead>
@@ -182,6 +192,9 @@ const Grupos = () => {
                       <td className="px-6 py-4 text-muted-foreground">
                         {grupo.asignatura.name_asignatura}
                       </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge active={grupo.activo} />
+                      </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
@@ -192,13 +205,23 @@ const Grupos = () => {
                             >
                               Editar
                             </Button>
-                            <Button
-                              variant="ghosterror"
-                              size="sm"
-                              onClick={() => handleDelete(grupo)}
-                            >
-                              Eliminar
-                            </Button>
+                            {grupo.activo ? (
+                              <Button
+                                variant="ghosterror"
+                                size="sm"
+                                onClick={() => handleDeactivate(grupo)}
+                              >
+                                Desactivar
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghostprimary"
+                                size="sm"
+                                onClick={() => handleActivate(grupo)}
+                              >
+                                Activar
+                              </Button>
+                            )}
                           </div>
                         </td>
                       )}
