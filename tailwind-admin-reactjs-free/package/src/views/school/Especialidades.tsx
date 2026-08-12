@@ -3,6 +3,7 @@ import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
   PublicationBadge,
+  StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
@@ -20,6 +21,7 @@ import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
 import {
+  activateEspecialidad,
   createEspecialidad,
   deleteEspecialidad,
   listEspecialidades,
@@ -136,14 +138,29 @@ const Especialidades = () => {
     }
   };
 
-  const handleDelete = async (e: Especialidad) => {
-    if (!(await confirm({ title: `Eliminar la especialidad "${e.nombre}"?`, destructive: true })))
+  const handleDeactivate = async (e: Especialidad) => {
+    if (
+      !(await confirm({
+        title: `Desactivar la especialidad "${e.nombre}"?`,
+        confirmLabel: 'Desactivar',
+        destructive: true,
+      }))
+    )
       return;
     try {
       await deleteEspecialidad(e.id_especialidad);
       await load();
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (e: Especialidad) => {
+    try {
+      await activateEspecialidad(e.id_especialidad);
+      await load();
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -173,15 +190,22 @@ const Especialidades = () => {
                   <span className="rounded-full bg-lightprimary px-3 py-1 text-xs font-medium text-primary">
                     Orden {e.orden}
                   </span>
+                  {canManage && !e.activo && <StatusBadge active={e.activo} />}
                 </div>
                 {canManage && (
                   <div className="flex shrink-0 gap-2">
                     <Button variant="ghostprimary" size="sm" onClick={() => openEdit(e)}>
                       Editar
                     </Button>
-                    <Button variant="ghosterror" size="sm" onClick={() => handleDelete(e)}>
-                      Eliminar
-                    </Button>
+                    {e.activo ? (
+                      <Button variant="ghosterror" size="sm" onClick={() => handleDeactivate(e)}>
+                        Desactivar
+                      </Button>
+                    ) : (
+                      <Button variant="ghostprimary" size="sm" onClick={() => handleActivate(e)}>
+                        Activar
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

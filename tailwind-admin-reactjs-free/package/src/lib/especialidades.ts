@@ -19,3 +19,7 @@ export function updateEspecialidad(
 export function deleteEspecialidad(id: number): Promise<void> {
   return api.del<void>(`/especialidades/${id}`);
 }
+
+export function activateEspecialidad(id: number): Promise<Especialidad> {
+  return api.put<Especialidad>(`/especialidades/${id}`, { activo: true });
+}

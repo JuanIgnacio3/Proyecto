@@ -25,6 +25,10 @@ export function deleteEvaluacion(id: number): Promise<void> {
   return api.del<void>(`/evaluaciones/${id}`);
 }
 
+export function activateEvaluacion(id: number): Promise<Evaluacion> {
+  return api.put<Evaluacion>(`/evaluaciones/${id}`, { activo: true });
+}
+
 export function getNotas(idEvaluacion: number): Promise<NotasRoster> {
   return api.get<NotasRoster>(`/evaluaciones/${idEvaluacion}/notas`);
 }

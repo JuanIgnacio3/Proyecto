@@ -16,3 +16,7 @@ export function updateEvento(id: number, payload: EventoInput): Promise<Evento> 
 export function deleteEvento(id: number): Promise<void> {
   return api.del<void>(`/eventos/${id}`);
 }
+
+export function activateEvento(id: number): Promise<Evento> {
+  return api.put<Evento>(`/eventos/${id}`, { activo: true });
+}

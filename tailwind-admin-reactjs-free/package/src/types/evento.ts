@@ -14,6 +14,7 @@ export interface Evento {
   fecha_fin: string | null;
   tipo: TipoEvento;
   es_publico: boolean;
+  activo: boolean;
 }
 
 export interface EventoInput {

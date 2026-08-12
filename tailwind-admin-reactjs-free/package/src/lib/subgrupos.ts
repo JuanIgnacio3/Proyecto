@@ -16,3 +16,7 @@ export function updateSubgrupo(id: number, payload: SubgrupoCreate): Promise<Sub
 export function deleteSubgrupo(id: number): Promise<void> {
   return api.del<void>(`/subgrupos/${id}`);
 }
+
+export function activateSubgrupo(id: number): Promise<Subgrupo> {
+  return api.put<Subgrupo>(`/subgrupos/${id}`, { activo: true });
+}

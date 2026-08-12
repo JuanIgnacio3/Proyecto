@@ -3,6 +3,7 @@ import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
   PublicationBadge,
+  StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
@@ -20,6 +21,7 @@ import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
 import {
+  activateComunicado,
   createComunicado,
   deleteComunicado,
   listComunicados,
@@ -166,14 +168,29 @@ const Comunicados = () => {
     }
   };
 
-  const handleDelete = async (c: Comunicado) => {
-    if (!(await confirm({ title: `Eliminar el comunicado "${c.titulo}"?`, destructive: true })))
+  const handleDeactivate = async (c: Comunicado) => {
+    if (
+      !(await confirm({
+        title: `Desactivar el comunicado "${c.titulo}"?`,
+        confirmLabel: 'Desactivar',
+        destructive: true,
+      }))
+    )
       return;
     try {
       await deleteComunicado(c.id_comunicado);
       await load();
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (c: Comunicado) => {
+    try {
+      await activateComunicado(c.id_comunicado);
+      await load();
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -232,6 +249,7 @@ const Comunicados = () => {
                       {c.categoria}
                     </span>
                   )}
+                  {canManage && !c.activo && <StatusBadge active={c.activo} />}
                 </div>
                 <span className="shrink-0 text-xs text-muted-foreground">
                   {formatFecha(c.fecha_publicacion)}
@@ -250,9 +268,15 @@ const Comunicados = () => {
                     <Button variant="ghostprimary" size="sm" onClick={() => openEdit(c)}>
                       Editar
                     </Button>
-                    <Button variant="ghosterror" size="sm" onClick={() => handleDelete(c)}>
-                      Eliminar
-                    </Button>
+                    {c.activo ? (
+                      <Button variant="ghosterror" size="sm" onClick={() => handleDeactivate(c)}>
+                        Desactivar
+                      </Button>
+                    ) : (
+                      <Button variant="ghostprimary" size="sm" onClick={() => handleActivate(c)}>
+                        Activar
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

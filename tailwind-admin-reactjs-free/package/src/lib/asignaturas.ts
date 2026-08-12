@@ -19,3 +19,7 @@ export function updateAsignatura(
 export function deleteAsignatura(id: number): Promise<void> {
   return api.del<void>(`/asignaturas/${id}`);
 }
+
+export function activateAsignatura(id: number): Promise<Asignatura> {
+  return api.put<Asignatura>(`/asignaturas/${id}`, { activo: true });
+}

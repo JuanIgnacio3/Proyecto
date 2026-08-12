@@ -7,6 +7,7 @@ export interface Especialidad {
   imagen: string | null;
   es_publico: boolean;
   orden: number;
+  activo: boolean;
 }
 
 export interface EspecialidadInput {

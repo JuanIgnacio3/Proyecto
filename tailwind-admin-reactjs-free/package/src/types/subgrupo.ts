@@ -23,6 +23,7 @@ export interface Subgrupo {
   grupo: SubgrupoGrupoMini;
   profesores: SubgrupoProfesorMini[];
   estudiantes: SubgrupoEstudianteMini[];
+  activo: boolean;
 }
 
 export interface SubgrupoCreate {

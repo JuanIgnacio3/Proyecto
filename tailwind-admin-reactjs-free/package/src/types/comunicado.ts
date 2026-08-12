@@ -13,6 +13,7 @@ export interface Comunicado {
   fecha_publicacion: string;
   id_autor: number;
   autor_correo: string;
+  activo: boolean;
 }
 
 export interface ComunicadoInput {

@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
-import { useConfirm } from 'src/components/institutional';
+import { StatusBadge, useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -17,6 +17,7 @@ import { listEstudiantes } from 'src/lib/estudiantes';
 import { listGrupos } from 'src/lib/grupos';
 import { listProfesores } from 'src/lib/profesores';
 import {
+  activateSubgrupo,
   createSubgrupo,
   deleteSubgrupo,
   listSubgrupos,
@@ -135,11 +136,11 @@ const Subgrupos = () => {
     }
   };
 
-  const handleDelete = async (sg: Subgrupo) => {
+  const handleDeactivate = async (sg: Subgrupo) => {
     if (
       !(await confirm({
-        title: `Eliminar el subgrupo "${sg.name_subgrupo}"?`,
-        confirmLabel: 'Eliminar',
+        title: `Desactivar el subgrupo "${sg.name_subgrupo}"?`,
+        confirmLabel: 'Desactivar',
         destructive: true,
       }))
     )
@@ -148,7 +149,16 @@ const Subgrupos = () => {
       await deleteSubgrupo(sg.id_subgrupo);
       await loadSubgrupos();
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (sg: Subgrupo) => {
+    try {
+      await activateSubgrupo(sg.id_subgrupo);
+      await loadSubgrupos();
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -209,6 +219,7 @@ const Subgrupos = () => {
                     <th className="px-6 py-3 text-sm font-semibold">Grupo</th>
                     <th className="px-6 py-3 text-sm font-semibold">Profesores</th>
                     <th className="px-6 py-3 text-sm font-semibold">Estudiantes</th>
+                    <th className="px-6 py-3 text-sm font-semibold">Estado</th>
                     {isAdmin && <th className="px-6 py-3 text-sm font-semibold text-right">Acciones</th>}
                   </tr>
                 </thead>
@@ -228,6 +239,9 @@ const Subgrupos = () => {
                       <td className="px-6 py-4 text-muted-foreground">
                         {sg.estudiantes.length}
                       </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge active={sg.activo} />
+                      </td>
                       {isAdmin && (
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
@@ -238,13 +252,23 @@ const Subgrupos = () => {
                             >
                               Editar
                             </Button>
-                            <Button
-                              variant="ghosterror"
-                              size="sm"
-                              onClick={() => handleDelete(sg)}
-                            >
-                              Eliminar
-                            </Button>
+                            {sg.activo ? (
+                              <Button
+                                variant="ghosterror"
+                                size="sm"
+                                onClick={() => handleDeactivate(sg)}
+                              >
+                                Desactivar
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghostprimary"
+                                size="sm"
+                                onClick={() => handleActivate(sg)}
+                              >
+                                Activar
+                              </Button>
+                            )}
                           </div>
                         </td>
                       )}

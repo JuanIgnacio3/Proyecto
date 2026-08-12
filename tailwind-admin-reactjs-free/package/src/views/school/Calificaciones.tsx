@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
-import { useConfirm } from 'src/components/institutional';
+import { StatusBadge, useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -14,6 +14,7 @@ import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
 import {
+  activateEvaluacion,
   createEvaluacion,
   deleteEvaluacion,
   getNotas,
@@ -137,11 +138,11 @@ const Calificaciones = () => {
     }
   };
 
-  const handleDelete = async (ev: Evaluacion) => {
+  const handleDeactivate = async (ev: Evaluacion) => {
     if (
       !(await confirm({
-        title: `Eliminar la evaluacion "${ev.name_evaluacion}" y sus notas?`,
-        confirmLabel: 'Eliminar',
+        title: `Desactivar la evaluacion "${ev.name_evaluacion}"?`,
+        confirmLabel: 'Desactivar',
         destructive: true,
       }))
     )
@@ -150,7 +151,16 @@ const Calificaciones = () => {
       await deleteEvaluacion(ev.id_evaluacion);
       await loadEvaluaciones(idGrupo);
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (ev: Evaluacion) => {
+    try {
+      await activateEvaluacion(ev.id_evaluacion);
+      await loadEvaluaciones(idGrupo);
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -273,6 +283,7 @@ const Calificaciones = () => {
                       <th className="px-6 py-3 text-sm font-semibold">Periodo</th>
                       <th className="px-6 py-3 text-sm font-semibold">Porcentaje</th>
                       <th className="px-6 py-3 text-sm font-semibold">Fecha</th>
+                      <th className="px-6 py-3 text-sm font-semibold">Estado</th>
                       <th className="px-6 py-3 text-sm font-semibold text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -283,6 +294,9 @@ const Calificaciones = () => {
                         <td className="px-6 py-4 text-muted-foreground">{ev.periodo}</td>
                         <td className="px-6 py-4 text-muted-foreground">{ev.porcentaje}%</td>
                         <td className="px-6 py-4 text-muted-foreground">{ev.fecha ?? '-'}</td>
+                        <td className="px-6 py-4">
+                          <StatusBadge active={ev.activo} />
+                        </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
                             <Button variant="lightprimary" size="sm" onClick={() => openNotas(ev)}>
@@ -297,13 +311,23 @@ const Calificaciones = () => {
                                 >
                                   Editar
                                 </Button>
-                                <Button
-                                  variant="ghosterror"
-                                  size="sm"
-                                  onClick={() => handleDelete(ev)}
-                                >
-                                  Eliminar
-                                </Button>
+                                {ev.activo ? (
+                                  <Button
+                                    variant="ghosterror"
+                                    size="sm"
+                                    onClick={() => handleDeactivate(ev)}
+                                  >
+                                    Desactivar
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghostprimary"
+                                    size="sm"
+                                    onClick={() => handleActivate(ev)}
+                                  >
+                                    Activar
+                                  </Button>
+                                )}
                               </>
                             )}
                           </div>

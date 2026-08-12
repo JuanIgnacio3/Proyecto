@@ -19,3 +19,7 @@ export function updateComunicado(
 export function deleteComunicado(id: number): Promise<void> {
   return api.del<void>(`/comunicados/${id}`);
 }
+
+export function activateComunicado(id: number): Promise<Comunicado> {
+  return api.put<Comunicado>(`/comunicados/${id}`, { activo: true });
+}

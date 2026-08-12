@@ -3,6 +3,7 @@ import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
   PublicationBadge,
+  StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
@@ -19,7 +20,13 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
-import { createEvento, deleteEvento, listEventos, updateEvento } from 'src/lib/eventos';
+import {
+  activateEvento,
+  createEvento,
+  deleteEvento,
+  listEventos,
+  updateEvento,
+} from 'src/lib/eventos';
 import { canManageCalendario } from 'src/lib/roles';
 import type { Evento, TipoEvento } from 'src/types/evento';
 
@@ -172,13 +179,29 @@ const Calendario = () => {
     }
   };
 
-  const handleDelete = async (e: Evento) => {
-    if (!(await confirm({ title: `Eliminar el evento "${e.titulo}"?`, destructive: true }))) return;
+  const handleDeactivate = async (e: Evento) => {
+    if (
+      !(await confirm({
+        title: `Desactivar el evento "${e.titulo}"?`,
+        confirmLabel: 'Desactivar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await deleteEvento(e.id_evento);
       await load();
     } catch (err) {
-      await notify(err instanceof ApiError ? err.message : 'No se pudo eliminar.');
+      await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
+    }
+  };
+
+  const handleActivate = async (e: Evento) => {
+    try {
+      await activateEvento(e.id_evento);
+      await load();
+    } catch (err) {
+      await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
   };
 
@@ -233,6 +256,7 @@ const Calendario = () => {
                             {e.tipo}
                           </span>
                           <PublicationBadge isPublic={e.es_publico} className="px-2.5 py-0.5" />
+                          {canManage && !e.activo && <StatusBadge active={e.activo} />}
                           <h3 className="font-medium">{e.titulo}</h3>
                         </div>
                         {e.descripcion && (
@@ -244,9 +268,23 @@ const Calendario = () => {
                           <Button variant="ghostprimary" size="sm" onClick={() => openEdit(e)}>
                             Editar
                           </Button>
-                          <Button variant="ghosterror" size="sm" onClick={() => handleDelete(e)}>
-                            Eliminar
-                          </Button>
+                          {e.activo ? (
+                            <Button
+                              variant="ghosterror"
+                              size="sm"
+                              onClick={() => handleDeactivate(e)}
+                            >
+                              Desactivar
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghostprimary"
+                              size="sm"
+                              onClick={() => handleActivate(e)}
+                            >
+                              Activar
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>

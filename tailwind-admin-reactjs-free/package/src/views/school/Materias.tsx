@@ -8,6 +8,7 @@ import {
   PageHeader,
   RowActions,
   SectionCard,
+  StatusBadge,
   useConfirm,
   type Column,
 } from 'src/components/institutional';
@@ -17,6 +18,7 @@ import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import {
+  activateAsignatura,
   createAsignatura,
   deleteAsignatura,
   listAsignaturas,
@@ -80,11 +82,11 @@ const Materias = () => {
     }
   };
 
-  const handleDelete = async (asignatura: Asignatura) => {
+  const handleDeactivate = async (asignatura: Asignatura) => {
     if (
       !(await confirm({
-        title: `Eliminar la materia "${asignatura.name_asignatura}"?`,
-        confirmLabel: 'Eliminar',
+        title: `Desactivar la materia "${asignatura.name_asignatura}"?`,
+        confirmLabel: 'Desactivar',
         destructive: true,
       }))
     )
@@ -93,7 +95,16 @@ const Materias = () => {
       await deleteAsignatura(asignatura.id_asignatura);
       await loadAsignaturas();
     } catch (err) {
-      await notify(getErrorMessage(err, 'No se pudo eliminar.'));
+      await notify(getErrorMessage(err, 'No se pudo desactivar.'));
+    }
+  };
+
+  const handleActivate = async (asignatura: Asignatura) => {
+    try {
+      await activateAsignatura(asignatura.id_asignatura);
+      await loadAsignaturas();
+    } catch (err) {
+      await notify(getErrorMessage(err, 'No se pudo activar.'));
     }
   };
 
@@ -104,13 +115,23 @@ const Materias = () => {
       render: (a) => <span className="text-muted-foreground">{a.id_asignatura}</span>,
     },
     { key: 'nombre', header: 'Nombre', render: (a) => <span className="font-medium">{a.name_asignatura}</span> },
+    { key: 'estado', header: 'Estado', render: (a) => <StatusBadge active={a.activo} /> },
   ];
   if (isAdmin) {
     columns.push({
       key: 'acc',
       header: 'Acciones',
       align: 'right',
-      render: (a) => <RowActions onEdit={() => openEdit(a)} onDelete={() => handleDelete(a)} />,
+      render: (a) => (
+        <RowActions
+          onEdit={() => openEdit(a)}
+          onDelete={() => handleDeactivate(a)}
+          deleteLabel="Desactivar"
+          showDelete={a.activo}
+          onActivate={() => handleActivate(a)}
+          showActivate={!a.activo}
+        />
+      ),
     });
   }
 

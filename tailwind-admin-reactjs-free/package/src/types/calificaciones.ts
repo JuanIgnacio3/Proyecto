@@ -10,6 +10,7 @@ export interface Evaluacion {
   porcentaje: number;
   fecha: string | null;
   id_grupo: number;
+  activo: boolean;
   grupo: EvaluacionGrupoMini;
 }
 
