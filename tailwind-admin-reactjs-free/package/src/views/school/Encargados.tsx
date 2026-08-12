@@ -22,6 +22,7 @@ import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import { canManagePersonas } from 'src/lib/roles';
 import {
+  activateEncargado,
   createEncargado,
   deactivateEncargado,
   listEncargados,
@@ -168,6 +169,15 @@ const Encargados = () => {
     }
   };
 
+  const handleActivate = async (enc: Encargado) => {
+    try {
+      await activateEncargado(enc.id_encargado);
+      await loadEncargados();
+    } catch (err) {
+      await notify(getErrorMessage(err, 'No se pudo activar.'));
+    }
+  };
+
   const columns: Column<Encargado>[] = [
     {
       key: 'nombre',
@@ -218,6 +228,8 @@ const Encargados = () => {
           onDelete={() => handleDeactivate(enc)}
           deleteLabel="Desactivar"
           showDelete={enc.usuario.activo}
+          onActivate={() => handleActivate(enc)}
+          showActivate={!enc.usuario.activo}
         />
       ),
     });

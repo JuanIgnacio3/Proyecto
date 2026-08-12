@@ -20,6 +20,7 @@ import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import { canManagePersonas } from 'src/lib/roles';
 import {
+  activateEstudiante,
   createEstudiante,
   deactivateEstudiante,
   listEstudiantes,
@@ -162,6 +163,15 @@ const Estudiantes = () => {
     }
   };
 
+  const handleActivate = async (est: Estudiante) => {
+    try {
+      await activateEstudiante(est.id_estudiante);
+      await loadEstudiantes();
+    } catch (err) {
+      await notify(getErrorMessage(err, 'No se pudo activar.'));
+    }
+  };
+
   const columns: Column<Estudiante>[] = [
     {
       key: 'nombre',
@@ -201,6 +211,8 @@ const Estudiantes = () => {
           onDelete={() => handleDeactivate(est)}
           deleteLabel="Desactivar"
           showDelete={est.usuario.activo}
+          onActivate={() => handleActivate(est)}
+          showActivate={!est.usuario.activo}
         />
       ),
     });

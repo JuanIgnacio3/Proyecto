@@ -20,6 +20,7 @@ import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import { listGrupos, listTiposDocumento } from 'src/lib/estudiantes';
 import {
+  activateProfesor,
   createProfesor,
   deactivateProfesor,
   listProfesores,
@@ -161,6 +162,15 @@ const Profesores = () => {
     }
   };
 
+  const handleActivate = async (prof: Profesor) => {
+    try {
+      await activateProfesor(prof.id_profesor);
+      await loadProfesores();
+    } catch (err) {
+      await notify(getErrorMessage(err, 'No se pudo activar.'));
+    }
+  };
+
   const columns: Column<Profesor>[] = [
     {
       key: 'nombre',
@@ -200,6 +210,8 @@ const Profesores = () => {
           onDelete={() => handleDeactivate(prof)}
           deleteLabel="Desactivar"
           showDelete={prof.usuario.activo}
+          onActivate={() => handleActivate(prof)}
+          showActivate={!prof.usuario.activo}
         />
       ),
     });

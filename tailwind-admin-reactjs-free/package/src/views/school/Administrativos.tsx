@@ -19,6 +19,7 @@ import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import {
+  activateAdministrativo,
   createAdministrativo,
   deactivateAdministrativo,
   listAdministrativos,
@@ -154,6 +155,15 @@ const Administrativos = () => {
     }
   };
 
+  const handleActivate = async (adm: Administrativo) => {
+    try {
+      await activateAdministrativo(adm.id_administrativo);
+      await loadAdministrativos();
+    } catch (err) {
+      await notify(getErrorMessage(err, 'No se pudo activar.'));
+    }
+  };
+
   const columns: Column<Administrativo>[] = [
     {
       key: 'nombre',
@@ -200,6 +210,8 @@ const Administrativos = () => {
           onDelete={() => handleDeactivate(adm)}
           deleteLabel="Desactivar"
           showDelete={adm.usuario.activo}
+          onActivate={() => handleActivate(adm)}
+          showActivate={!adm.usuario.activo}
         />
       ),
     });

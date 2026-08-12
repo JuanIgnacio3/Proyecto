@@ -26,6 +26,10 @@ export function deactivateEstudiante(id: number): Promise<void> {
   return api.del<void>(`/estudiantes/${id}`);
 }
 
+export function activateEstudiante(id: number): Promise<void> {
+  return api.post<void>(`/estudiantes/${id}/activar`);
+}
+
 export function listTiposDocumento(): Promise<TipoDocumento[]> {
   return api.get<TipoDocumento[]>('/catalogos/tipos-documento');
 }

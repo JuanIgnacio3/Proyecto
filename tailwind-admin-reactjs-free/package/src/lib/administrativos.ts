@@ -25,3 +25,7 @@ export function updateAdministrativo(
 export function deactivateAdministrativo(id: number): Promise<void> {
   return api.del<void>(`/administrativos/${id}`);
 }
+
+export function activateAdministrativo(id: number): Promise<void> {
+  return api.post<void>(`/administrativos/${id}/activar`);
+}

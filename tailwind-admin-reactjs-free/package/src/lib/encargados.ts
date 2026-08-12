@@ -20,3 +20,7 @@ export function updateEncargado(id: number, payload: EncargadoUpdate): Promise<E
 export function deactivateEncargado(id: number): Promise<void> {
   return api.del<void>(`/encargados/${id}`);
 }
+
+export function activateEncargado(id: number): Promise<void> {
+  return api.post<void>(`/encargados/${id}/activar`);
+}

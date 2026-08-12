@@ -16,3 +16,7 @@ export function updateProfesor(id: number, payload: ProfesorUpdate): Promise<Pro
 export function deactivateProfesor(id: number): Promise<void> {
   return api.del<void>(`/profesores/${id}`);
 }
+
+export function activateProfesor(id: number): Promise<void> {
+  return api.post<void>(`/profesores/${id}/activar`);
+}
