@@ -186,3 +186,18 @@ def deactivate_encargado(
         )
     encargado.usuario.activo = False
     db.commit()
+
+
+@router.post("/{id_encargado}/activar", status_code=status.HTTP_204_NO_CONTENT)
+def activate_encargado(
+    id_encargado: int,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
+) -> None:
+    encargado = db.get(Encargado, id_encargado)
+    if encargado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Encargado no encontrado"
+        )
+    encargado.usuario.activo = True
+    db.commit()

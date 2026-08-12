@@ -35,6 +35,7 @@ def _serialize(c: Comunicado) -> dict:
         "fecha_publicacion": c.fecha_publicacion,
         "id_autor": c.id_autor,
         "autor_correo": c.autor.correo_institucional if c.autor else "",
+        "activo": c.activo,
     }
 
 
@@ -52,11 +53,7 @@ def list_comunicados(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> list[dict]:
-    query = (
-        db.query(Comunicado)
-        .options(joinedload(Comunicado.autor))
-        .filter(Comunicado.activo.is_(True))
-    )
+    query = db.query(Comunicado).options(joinedload(Comunicado.autor))
 
     rol = current_user.rol.name_rol
     if rol not in ROLES_GESTION:

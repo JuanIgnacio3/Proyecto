@@ -32,7 +32,6 @@ def list_especialidades(
 ) -> list[Especialidad]:
     return (
         db.query(Especialidad)
-        .filter(Especialidad.activo.is_(True))
         .order_by(Especialidad.orden, Especialidad.id_especialidad)
         .all()
     )

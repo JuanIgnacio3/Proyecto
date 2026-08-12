@@ -28,12 +28,14 @@ class EvaluacionUpdate(BaseModel):
     porcentaje: float | None = Field(default=None, ge=0, le=100)
     fecha: date | None = None
     id_grupo: int | None = None
+    activo: bool | None = None
 
 
 class EvaluacionOut(EvaluacionBase):
     model_config = ConfigDict(from_attributes=True)
 
     id_evaluacion: int
+    activo: bool
     grupo: GrupoMini
 
 

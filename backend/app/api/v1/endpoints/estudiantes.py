@@ -144,3 +144,18 @@ def deactivate_estudiante(
         )
     estudiante.usuario.activo = False
     db.commit()
+
+
+@router.post("/{id_estudiante}/activar", status_code=status.HTTP_204_NO_CONTENT)
+def activate_estudiante(
+    id_estudiante: int,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
+) -> None:
+    estudiante = db.get(Estudiante, id_estudiante)
+    if estudiante is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado"
+        )
+    estudiante.usuario.activo = True
+    db.commit()

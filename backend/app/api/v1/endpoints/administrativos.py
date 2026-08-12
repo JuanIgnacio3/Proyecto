@@ -135,3 +135,18 @@ def deactivate_administrativo(
         )
     administrativo.usuario.activo = False
     db.commit()
+
+
+@router.post("/{id_administrativo}/activar", status_code=status.HTTP_204_NO_CONTENT)
+def activate_administrativo(
+    id_administrativo: int,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
+) -> None:
+    administrativo = db.get(Administrativo, id_administrativo)
+    if administrativo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Administrativo no encontrado"
+        )
+    administrativo.usuario.activo = True
+    db.commit()

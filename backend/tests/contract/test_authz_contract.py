@@ -41,6 +41,7 @@ RBAC_ONLY: dict[tuple[str, str], set[str]] = {
     ("app.api.v1.endpoints.estudiantes", "create_estudiante"): {"Administrador", "Administrativo"},
     ("app.api.v1.endpoints.estudiantes", "update_estudiante"): {"Administrador", "Administrativo"},
     ("app.api.v1.endpoints.estudiantes", "deactivate_estudiante"): {"Administrador", "Administrativo"},
+    ("app.api.v1.endpoints.estudiantes", "activate_estudiante"): {"Administrador", "Administrativo"},
     ("app.api.v1.endpoints.grupos", "create_grupo"): {"Administrador"},
     ("app.api.v1.endpoints.grupos", "update_grupo"): {"Administrador"},
     ("app.api.v1.endpoints.grupos", "delete_grupo"): {"Administrador"},

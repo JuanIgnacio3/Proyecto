@@ -41,10 +41,12 @@ class SubGrupoUpdate(BaseModel):
     id_grupo: int | None = None
     profesores_ids: list[int] | None = None
     estudiantes_ids: list[int] | None = None
+    activo: bool | None = None
 
 
 class SubGrupoOut(SubGrupoBase):
     id_subgrupo: int
+    activo: bool
     grupo: GrupoMini
     profesores: list[ProfesorMini]
     estudiantes: list[EstudianteMini]

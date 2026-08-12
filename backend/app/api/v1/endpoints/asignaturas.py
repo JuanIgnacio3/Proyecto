@@ -17,12 +17,7 @@ def list_asignaturas(
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_roles("Administrador", "Profesor")),
 ) -> list[Asignatura]:
-    return (
-        db.query(Asignatura)
-        .filter(Asignatura.activo.is_(True))
-        .order_by(Asignatura.id_asignatura)
-        .all()
-    )
+    return db.query(Asignatura).order_by(Asignatura.id_asignatura).all()
 
 
 @router.post("/", response_model=AsignaturaOut, status_code=status.HTTP_201_CREATED)

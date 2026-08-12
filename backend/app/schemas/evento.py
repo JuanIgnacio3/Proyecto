@@ -34,9 +34,11 @@ class EventoUpdate(BaseModel):
     fecha_fin: date | None = None
     tipo: TipoEvento | None = None
     es_publico: bool | None = None
+    activo: bool | None = None
 
 
 class EventoOut(EventoBase):
     model_config = ConfigDict(from_attributes=True)
 
     id_evento: int
+    activo: bool

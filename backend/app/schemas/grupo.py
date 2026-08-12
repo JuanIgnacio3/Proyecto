@@ -15,10 +15,12 @@ class GrupoCreate(GrupoBase):
 class GrupoUpdate(BaseModel):
     name_grupo: str | None = Field(default=None, min_length=1, max_length=100)
     id_asignatura: int | None = None
+    activo: bool | None = None
 
 
 class GrupoOut(GrupoBase):
     model_config = ConfigDict(from_attributes=True)
 
     id_grupo: int
+    activo: bool
     asignatura: AsignaturaOut

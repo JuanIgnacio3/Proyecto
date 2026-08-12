@@ -34,7 +34,7 @@ def list_grupos(
         )
     ),
 ) -> list[Grupo]:
-    query = ctx.scope_grupos(db.query(Grupo)).filter(Grupo.activo.is_(True))
+    query = ctx.scope_grupos(db.query(Grupo))
     return query.order_by(Grupo.id_grupo).all()
 
 

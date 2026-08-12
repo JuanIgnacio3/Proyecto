@@ -42,7 +42,7 @@ def list_evaluaciones(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> list[Evaluacion]:
-    query = ctx.scope_evaluaciones(db.query(Evaluacion)).filter(Evaluacion.activo.is_(True))
+    query = ctx.scope_evaluaciones(db.query(Evaluacion))
     if id_grupo is not None:
         query = query.filter(Evaluacion.id_grupo == id_grupo)
     return query.order_by(Evaluacion.periodo, Evaluacion.id_evaluacion).all()

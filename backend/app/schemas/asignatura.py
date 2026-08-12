@@ -11,9 +11,11 @@ class AsignaturaCreate(AsignaturaBase):
 
 class AsignaturaUpdate(BaseModel):
     name_asignatura: str | None = Field(default=None, min_length=1, max_length=100)
+    activo: bool | None = None
 
 
 class AsignaturaOut(AsignaturaBase):
     model_config = ConfigDict(from_attributes=True)
 
     id_asignatura: int
+    activo: bool

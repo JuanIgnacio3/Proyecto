@@ -45,6 +45,7 @@ class ComunicadoUpdate(BaseModel):
     dirigido_a: Audiencia | None = None
     es_publico: bool | None = None
     categoria: CategoriaPublica | None = None
+    activo: bool | None = None
 
 
 class ComunicadoOut(ComunicadoBase):
@@ -54,3 +55,4 @@ class ComunicadoOut(ComunicadoBase):
     fecha_publicacion: datetime
     id_autor: int
     autor_correo: str
+    activo: bool

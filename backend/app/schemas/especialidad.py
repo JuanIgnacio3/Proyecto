@@ -23,9 +23,11 @@ class EspecialidadUpdate(BaseModel):
     imagen: str | None = None
     es_publico: bool | None = None
     orden: int | None = None
+    activo: bool | None = None
 
 
 class EspecialidadOut(EspecialidadBase):
     model_config = ConfigDict(from_attributes=True)
 
     id_especialidad: int
+    activo: bool

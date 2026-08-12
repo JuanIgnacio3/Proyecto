@@ -23,6 +23,7 @@ def _serialize(sg: SubGrupo) -> dict:
         "name_subgrupo": sg.name_subgrupo,
         "tipo_subgrupo": sg.tipo_subgrupo,
         "id_grupo": sg.id_grupo,
+        "activo": sg.activo,
         "grupo": sg.grupo,
         "profesores": [link.profesor for link in sg.profesores],
         "estudiantes": [link.estudiante for link in sg.estudiantes],
@@ -56,7 +57,7 @@ def list_subgrupos(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> list[dict]:
-    query = ctx.scope_subgrupos(db.query(SubGrupo)).filter(SubGrupo.activo.is_(True))
+    query = ctx.scope_subgrupos(db.query(SubGrupo))
     subgrupos = query.order_by(SubGrupo.id_subgrupo).all()
     return [_serialize(sg) for sg in subgrupos]
 
