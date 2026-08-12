@@ -57,7 +57,8 @@ def list_comunicados(
 
     rol = current_user.rol.name_rol
     if rol not in ROLES_GESTION:
-        # Solo lectura: los dirigidos a "Todos" o a la audiencia de su rol.
+        # Solo lectura: nunca ven los desactivados, ni los dirigidos a otra audiencia.
+        query = query.filter(Comunicado.activo.is_(True))
         audiencia = AUDIENCIA_POR_ROL.get(rol)
         if audiencia:
             query = query.filter(
