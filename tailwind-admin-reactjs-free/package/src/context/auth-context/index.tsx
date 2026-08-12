@@ -20,6 +20,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Cierre de sesion automatico tras este tiempo sin actividad del usuario.
+const IDLE_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutos
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +56,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void api.post('/auth/logout').catch(() => {});
     setUser(null);
   }, []);
+
+  // Cierre de sesion por inactividad: reinicia el temporizador ante cualquier
+  // actividad y, si se agota sin uso, cierra la sesion (RequireAuth redirige).
+  useEffect(() => {
+    if (!user) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => logout(), IDLE_TIMEOUT_MS);
+    };
+    const events: (keyof WindowEventMap)[] = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'touchstart',
+      'scroll',
+    ];
+    const options: AddEventListenerOptions = { capture: true, passive: true };
+    events.forEach((event) => window.addEventListener(event, reset, options));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((event) => window.removeEventListener(event, reset, { capture: true }));
+    };
+  }, [user, logout]);
 
   const value = useMemo<AuthContextValue>(
     () => ({ user, isAuthenticated: user !== null, loading, login, logout }),
