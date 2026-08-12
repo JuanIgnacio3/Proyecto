@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
@@ -11,6 +11,9 @@ class SubGrupo(Base):
     name_subgrupo: Mapped[str] = mapped_column(String(100), nullable=False)
     tipo_subgrupo: Mapped[str] = mapped_column(String(50), nullable=False)
     id_grupo: Mapped[int] = mapped_column(ForeignKey("grupo.id_grupo"), nullable=False, index=True)
+    activo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
 
     grupo: Mapped["Grupo"] = relationship(back_populates="subgrupos")
     profesores: Mapped[list["SubGrupoProfesor"]] = relationship(

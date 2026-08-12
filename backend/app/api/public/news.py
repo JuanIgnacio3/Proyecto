@@ -43,7 +43,9 @@ def list_public_news(
     if err is not None:
         return err
 
-    query = db.query(Comunicado).filter(Comunicado.es_publico.is_(True))
+    query = db.query(Comunicado).filter(
+        Comunicado.es_publico.is_(True), Comunicado.activo.is_(True)
+    )
     if categoria is not None:
         query = query.filter(Comunicado.categoria == categoria)
 

@@ -52,7 +52,11 @@ def list_comunicados(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> list[dict]:
-    query = db.query(Comunicado).options(joinedload(Comunicado.autor))
+    query = (
+        db.query(Comunicado)
+        .options(joinedload(Comunicado.autor))
+        .filter(Comunicado.activo.is_(True))
+    )
 
     rol = current_user.rol.name_rol
     if rol not in ROLES_GESTION:
@@ -111,5 +115,5 @@ def delete_comunicado(
     _: Usuario = Depends(require_roles(*ROLES_GESTION)),
 ) -> None:
     comunicado = _get(db, id_comunicado)
-    db.delete(comunicado)
+    comunicado.activo = False
     db.commit()

@@ -54,7 +54,9 @@ def list_public_calendar(
     if err is not None:
         return err
 
-    query = db.query(Evento).filter(Evento.es_publico.is_(True))
+    query = db.query(Evento).filter(
+        Evento.es_publico.is_(True), Evento.activo.is_(True)
+    )
 
     # from: eventos con fecha_inicio >= from
     if date_from is not None:

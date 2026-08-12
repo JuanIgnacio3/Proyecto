@@ -42,7 +42,7 @@ def list_evaluaciones(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> list[Evaluacion]:
-    query = ctx.scope_evaluaciones(db.query(Evaluacion))
+    query = ctx.scope_evaluaciones(db.query(Evaluacion)).filter(Evaluacion.activo.is_(True))
     if id_grupo is not None:
         query = query.filter(Evaluacion.id_grupo == id_grupo)
     return query.order_by(Evaluacion.periodo, Evaluacion.id_evaluacion).all()
@@ -97,7 +97,7 @@ def delete_evaluacion(
 ) -> None:
     ctx.assert_evaluacion(id_evaluacion)
     evaluacion = _get_evaluacion(db, id_evaluacion)
-    db.delete(evaluacion)
+    evaluacion.activo = False
     db.commit()
 
 

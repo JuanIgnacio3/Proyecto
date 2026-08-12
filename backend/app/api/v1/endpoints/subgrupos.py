@@ -56,7 +56,7 @@ def list_subgrupos(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> list[dict]:
-    query = ctx.scope_subgrupos(db.query(SubGrupo))
+    query = ctx.scope_subgrupos(db.query(SubGrupo)).filter(SubGrupo.activo.is_(True))
     subgrupos = query.order_by(SubGrupo.id_subgrupo).all()
     return [_serialize(sg) for sg in subgrupos]
 
@@ -178,5 +178,5 @@ def delete_subgrupo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Subgrupo no encontrado"
         )
-    db.delete(subgrupo)
+    subgrupo.activo = False
     db.commit()

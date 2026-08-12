@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, Numeric, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base_class import Base
@@ -17,6 +17,9 @@ class Evaluacion(Base):
     periodo: Mapped[int] = mapped_column(Integer, nullable=False)
     porcentaje: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)
     fecha: Mapped[date | None] = mapped_column(Date, nullable=True)
+    activo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
 
     grupo: Mapped["Grupo"] = relationship()
     notas: Mapped[list["Nota"]] = relationship(

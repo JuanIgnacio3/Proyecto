@@ -28,7 +28,7 @@ def list_eventos(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
 ) -> list[Evento]:
-    query = db.query(Evento)
+    query = db.query(Evento).filter(Evento.activo.is_(True))
     # Los no-staff (Encargado/Estudiante) solo ven eventos publicos.
     if current_user.rol.name_rol not in ("Administrador", "Profesor", "Administrativo"):
         query = query.filter(Evento.es_publico.is_(True))
@@ -86,5 +86,5 @@ def delete_evento(
     _: Usuario = Depends(require_roles(*ROLES_GESTION)),
 ) -> None:
     evento = _get(db, id_evento)
-    db.delete(evento)
+    evento.activo = False
     db.commit()

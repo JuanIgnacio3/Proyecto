@@ -39,7 +39,9 @@ def list_public_specialties(
     if err is not None:
         return err
 
-    query = db.query(Especialidad).filter(Especialidad.es_publico.is_(True))
+    query = db.query(Especialidad).filter(
+        Especialidad.es_publico.is_(True), Especialidad.activo.is_(True)
+    )
 
     total = query.count()
 

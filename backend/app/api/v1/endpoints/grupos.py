@@ -34,7 +34,7 @@ def list_grupos(
         )
     ),
 ) -> list[Grupo]:
-    query = ctx.scope_grupos(db.query(Grupo))
+    query = ctx.scope_grupos(db.query(Grupo)).filter(Grupo.activo.is_(True))
     return query.order_by(Grupo.id_grupo).all()
 
 
@@ -107,14 +107,5 @@ def delete_grupo(
             detail="No se puede eliminar: hay estudiantes, profesores o subgrupos asociados",
         )
 
-    db.delete(grupo)
-    try:
-        db.commit()
-    except IntegrityError as exc:
-        # Red de seguridad ante otras referencias (asistencia, evaluaciones, etc.):
-        # devuelve un 409 claro en lugar de un 500.
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="No se puede eliminar: el grupo tiene registros asociados",
-        ) from exc
+    grupo.activo = False
+    db.commit()

@@ -31,5 +31,8 @@ class Comunicado(Base):
     # Categoria publica (valores controlados por el enum CategoriaPublica en
     # los schemas). Nullable: solo aplica a comunicados publicos.
     categoria: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    activo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
 
     autor: Mapped["Usuario"] = relationship()

@@ -32,6 +32,7 @@ def list_especialidades(
 ) -> list[Especialidad]:
     return (
         db.query(Especialidad)
+        .filter(Especialidad.activo.is_(True))
         .order_by(Especialidad.orden, Especialidad.id_especialidad)
         .all()
     )
@@ -72,5 +73,5 @@ def delete_especialidad(
     _: Usuario = Depends(require_roles(*ROLES_GESTION)),
 ) -> None:
     especialidad = _get(db, id_especialidad)
-    db.delete(especialidad)
+    especialidad.activo = False
     db.commit()
