@@ -12,7 +12,6 @@ from app.models.evaluacion import Evaluacion
 from app.models.grupo import Grupo
 from app.models.nota import Nota
 from app.models.profesor import Profesor
-from app.models.subgrupo import SubGrupo
 from app.models.usuario import Usuario
 from app.schemas.stats import (
     AsistenciaResumen,
@@ -69,7 +68,6 @@ def dashboard(
         encargados_activos=_count_activos(db, Encargado),
         grupos=db.query(Grupo).count(),
         materias=db.query(Asignatura).count(),
-        subgrupos=db.query(SubGrupo).count(),
         evaluaciones=db.query(Evaluacion).count(),
         promedio_general_notas=round(float(promedio), 1) if promedio is not None else None,
         asistencia=AsistenciaResumen(

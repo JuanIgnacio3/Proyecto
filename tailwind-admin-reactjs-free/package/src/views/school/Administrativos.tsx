@@ -8,9 +8,11 @@ import {
   FormSelect,
   PageHeader,
   RowActions,
+  SearchInput,
   SectionCard,
   StatusBadge,
   useConfirm,
+  PasswordInput,
   type Column,
 } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
@@ -18,6 +20,7 @@ import { Input } from 'src/components/ui/input';
 import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import {
   activateAdministrativo,
   createAdministrativo,
@@ -50,6 +53,7 @@ const Administrativos = () => {
   const [tipos, setTipos] = useState<TipoDocumento[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const { open, setOpen, editing, openCreate, openEdit } = useModal<Administrativo>();
   const [form, setForm] = useState({ ...emptyForm });
@@ -164,6 +168,17 @@ const Administrativos = () => {
     }
   };
 
+  const administrativosFiltrados = administrativos.filter((adm) =>
+    matchText(
+      query,
+      adm.name_administrativo,
+      adm.sec_name_administrativo,
+      adm.cargo,
+      adm.num_documento_administrativo,
+      adm.usuario.correo_institucional,
+    ),
+  );
+
   const columns: Column<Administrativo>[] = [
     {
       key: 'nombre',
@@ -237,7 +252,14 @@ const Administrativos = () => {
         <SectionCard
           title="Listado"
           subtitle={
-            loading ? 'Cargando...' : `${administrativos.length} administrativo(s) registrado(s)`
+            loading ? 'Cargando...' : `${administrativosFiltrados.length} administrativo(s)`
+          }
+          actions={
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Buscar por nombre, cargo, documento..."
+            />
           }
         >
           {listError ? (
@@ -246,10 +268,10 @@ const Administrativos = () => {
             </Banner>
           ) : (
             <CrudTable
-              rows={administrativos}
+              rows={administrativosFiltrados}
               getRowKey={(adm) => adm.id_administrativo}
               loading={loading}
-              emptyMessage="No hay administrativos registrados todavia."
+              emptyMessage="No hay administrativos que coincidan con la busqueda."
               columns={columns}
             />
           )}
@@ -340,9 +362,8 @@ const Administrativos = () => {
                 />
               </FormField>
               <FormField label="Contrasena inicial" htmlFor="apwd" required>
-                <Input
+                <PasswordInput
                   id="apwd"
-                  type="password"
                   value={form.password}
                   onChange={(e) => setField('password', e.target.value)}
                   minLength={8}

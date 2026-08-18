@@ -10,6 +10,8 @@ export interface AsistenciaRosterItem {
 
 export interface AsistenciaRoster {
   id_grupo: number;
+  id_profesor_asignatura_grupo: number;
+  periodo: number;
   fecha: string;
   registros: AsistenciaRosterItem[];
 }
@@ -21,7 +23,8 @@ export interface AsistenciaRegistroIn {
 }
 
 export interface AsistenciaBatchIn {
-  id_grupo: number;
+  id_profesor_asignatura_grupo: number;
+  periodo: number;
   fecha: string;
   registros: AsistenciaRegistroIn[];
 }

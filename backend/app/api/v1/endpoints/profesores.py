@@ -20,12 +20,17 @@ ROL_PROFESOR = "Profesor"
 def list_profesores(
     skip: int = 0,
     limit: int = 100,
+    activo: bool | None = None,
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_roles("Administrador", "Administrativo")),
 ) -> list[Profesor]:
+    query = db.query(Profesor)
+    # Los desplegables que asignan profesores piden activo=true para no ofrecer
+    # cuentas desactivadas; la vista de gestion no filtra (muestra todas).
+    if activo is not None:
+        query = query.filter(Profesor.usuario.has(Usuario.activo.is_(activo)))
     return (
-        db.query(Profesor)
-        .order_by(Profesor.id_profesor)
+        query.order_by(Profesor.id_profesor)
         .offset(skip)
         .limit(min(limit, 200))
         .all()
@@ -61,7 +66,6 @@ def create_profesor(
         phone_num_profesor=payload.phone_num_profesor,
         id_tipo_documento=payload.id_tipo_documento,
         num_documento_profesor=payload.num_documento_profesor,
-        id_grupo=payload.id_grupo,
     )
     db.add(usuario)
     db.add(profesor)
@@ -71,7 +75,7 @@ def create_profesor(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Correo o numero de documento duplicado, o tipo de documento/grupo invalido",
+            detail="Correo o numero de documento duplicado, o tipo de documento invalido",
         ) from exc
     db.refresh(profesor)
     return profesor
@@ -113,7 +117,7 @@ def update_profesor(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Numero de documento duplicado, o tipo de documento/grupo invalido",
+            detail="Numero de documento duplicado, o tipo de documento invalido",
         ) from exc
     db.refresh(profesor)
     return profesor

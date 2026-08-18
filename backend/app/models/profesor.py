@@ -22,9 +22,6 @@ class Profesor(Base):
         ForeignKey("tipo_documento.id_tipo_documento"), nullable=False, index=True
     )
     num_documento_profesor: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
-    id_grupo: Mapped[int | None] = mapped_column(ForeignKey("grupo.id_grupo"), nullable=True, index=True)
 
     usuario: Mapped["Usuario"] = relationship(back_populates="profesor")
     tipo_documento: Mapped["TipoDocumento"] = relationship(back_populates="profesores")
-    grupo: Mapped["Grupo | None"] = relationship(back_populates="profesores")
-    subgrupos: Mapped[list["SubGrupoProfesor"]] = relationship(back_populates="profesor")

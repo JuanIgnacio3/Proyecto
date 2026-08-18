@@ -31,13 +31,18 @@ DATA_SCOPED: dict[tuple[str, str], tuple[Policy, set[str]]] = {
     ("app.api.v1.endpoints.calificaciones", "get_notas"): (Policy.GROUP, {"Administrador", "Profesor"}),
     ("app.api.v1.endpoints.calificaciones", "save_notas"): (Policy.GROUP, {"Administrador", "Profesor"}),
     ("app.api.v1.endpoints.grupos", "list_grupos"): (Policy.GROUP, {"Administrador", "Profesor", "Administrativo"}),
-    ("app.api.v1.endpoints.subgrupos", "list_subgrupos"): (Policy.GROUP, {"Administrador", "Profesor"}),
-    ("app.api.v1.endpoints.subgrupos", "get_subgrupo"): (Policy.GROUP, {"Administrador", "Profesor"}),
 }
 
 # Endpoints SOLO-RBAC (escrituras admin/administrativo): usan require_roles, NUNCA
 # authz.require (no aplican scoping por datos).
 RBAC_ONLY: dict[tuple[str, str], set[str]] = {
+    ("app.api.v1.endpoints.usuarios", "list_usuarios"): {"Administrador"},
+    ("app.api.v1.endpoints.usuarios", "update_usuario"): {"Administrador"},
+    ("app.api.v1.endpoints.asignaciones", "list_asignaciones"): {"Administrador", "Profesor", "Administrativo"},
+    ("app.api.v1.endpoints.asignaciones", "mis_clases"): {"Administrador", "Profesor", "Administrativo"},
+    ("app.api.v1.endpoints.asignaciones", "create_asignacion"): {"Administrador"},
+    ("app.api.v1.endpoints.asignaciones", "update_asignacion"): {"Administrador"},
+    ("app.api.v1.endpoints.asignaciones", "delete_asignacion"): {"Administrador"},
     ("app.api.v1.endpoints.estudiantes", "create_estudiante"): {"Administrador", "Administrativo"},
     ("app.api.v1.endpoints.estudiantes", "update_estudiante"): {"Administrador", "Administrativo"},
     ("app.api.v1.endpoints.estudiantes", "deactivate_estudiante"): {"Administrador", "Administrativo"},
@@ -45,9 +50,6 @@ RBAC_ONLY: dict[tuple[str, str], set[str]] = {
     ("app.api.v1.endpoints.grupos", "create_grupo"): {"Administrador"},
     ("app.api.v1.endpoints.grupos", "update_grupo"): {"Administrador"},
     ("app.api.v1.endpoints.grupos", "delete_grupo"): {"Administrador"},
-    ("app.api.v1.endpoints.subgrupos", "create_subgrupo"): {"Administrador"},
-    ("app.api.v1.endpoints.subgrupos", "update_subgrupo"): {"Administrador"},
-    ("app.api.v1.endpoints.subgrupos", "delete_subgrupo"): {"Administrador"},
 }
 
 # Modulos migrados a AuthzContext: todo endpoint suyo debe estar clasificado.
@@ -57,7 +59,6 @@ MIGRATED_MODULES = {
     "app.api.v1.endpoints.asistencia",
     "app.api.v1.endpoints.calificaciones",
     "app.api.v1.endpoints.grupos",
-    "app.api.v1.endpoints.subgrupos",
 }
 
 

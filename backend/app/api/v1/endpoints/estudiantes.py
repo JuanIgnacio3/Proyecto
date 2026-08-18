@@ -21,6 +21,8 @@ ROL_ESTUDIANTE = "Estudiante"
 def list_estudiantes(
     skip: int = 0,
     limit: int = 100,
+    id_grupo: int | None = None,
+    activo: bool | None = None,
     db: Session = Depends(get_db),
     ctx: authz.AuthzContext = Depends(
         authz.require(
@@ -30,6 +32,12 @@ def list_estudiantes(
     ),
 ) -> list[Estudiante]:
     query = ctx.scope_estudiantes(db.query(Estudiante))
+    if id_grupo is not None:
+        query = query.filter(Estudiante.id_grupo == id_grupo)
+    # Los desplegables/rosters piden activo=true para no ofrecer estudiantes
+    # desactivados; la vista de gestion no filtra (muestra todos con su estado).
+    if activo is not None:
+        query = query.filter(Estudiante.usuario.has(Usuario.activo.is_(activo)))
     return (
         query.order_by(Estudiante.id_estudiante)
         .offset(skip)

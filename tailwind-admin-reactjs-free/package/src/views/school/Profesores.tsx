@@ -8,9 +8,11 @@ import {
   FormSelect,
   PageHeader,
   RowActions,
+  SearchInput,
   SectionCard,
   StatusBadge,
   useConfirm,
+  PasswordInput,
   type Column,
 } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
@@ -18,7 +20,8 @@ import { Input } from 'src/components/ui/input';
 import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
-import { listGrupos, listTiposDocumento } from 'src/lib/estudiantes';
+import { matchText } from 'src/lib/search';
+import { listTiposDocumento } from 'src/lib/estudiantes';
 import {
   activateProfesor,
   createProfesor,
@@ -26,7 +29,7 @@ import {
   listProfesores,
   updateProfesor,
 } from 'src/lib/profesores';
-import type { Grupo, TipoDocumento } from 'src/types/estudiante';
+import type { TipoDocumento } from 'src/types/estudiante';
 import type { Profesor } from 'src/types/profesor';
 
 const emptyForm = {
@@ -37,7 +40,6 @@ const emptyForm = {
   phone_num_profesor: '',
   id_tipo_documento: '',
   num_documento_profesor: '',
-  id_grupo: '',
   correo_institucional: '',
   password: '',
 };
@@ -49,9 +51,9 @@ const Profesores = () => {
 
   const [profesores, setProfesores] = useState<Profesor[]>([]);
   const [tipos, setTipos] = useState<TipoDocumento[]>([]);
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const { open, setOpen, editing, openCreate, openEdit } = useModal<Profesor>();
   const [form, setForm] = useState({ ...emptyForm });
@@ -74,16 +76,13 @@ const Profesores = () => {
     loadProfesores();
   }, [loadProfesores]);
 
-  // Catalogos para los selects (solo cuando el modal esta abierto).
+  // Catalogo de tipos de documento (solo cuando el modal esta abierto).
   useEffect(() => {
     if (!open) return;
-    Promise.all([listTiposDocumento(), listGrupos()])
-      .then(([t, g]) => {
-        setTipos(t);
-        setGrupos(g);
-      })
+    listTiposDocumento()
+      .then(setTipos)
       .catch(() => {
-        /* los selects quedaran vacios; el backend valida igual */
+        /* el select quedara vacio; el backend valida igual */
       });
   }, [open]);
 
@@ -100,7 +99,6 @@ const Profesores = () => {
             phone_num_profesor: editing.phone_num_profesor ?? '',
             id_tipo_documento: String(editing.id_tipo_documento),
             num_documento_profesor: editing.num_documento_profesor,
-            id_grupo: editing.id_grupo ? String(editing.id_grupo) : '',
             correo_institucional: '',
             password: '',
           }
@@ -125,7 +123,6 @@ const Profesores = () => {
         phone_num_profesor: form.phone_num_profesor || null,
         id_tipo_documento: Number(form.id_tipo_documento),
         num_documento_profesor: form.num_documento_profesor,
-        id_grupo: form.id_grupo ? Number(form.id_grupo) : null,
       };
       if (editing) {
         await updateProfesor(editing.id_profesor, base);
@@ -170,6 +167,16 @@ const Profesores = () => {
       await notify(getErrorMessage(err, 'No se pudo activar.'));
     }
   };
+
+  const profesoresFiltrados = profesores.filter((prof) =>
+    matchText(
+      query,
+      prof.name_profesor,
+      prof.sec_name_profesor,
+      prof.num_documento_profesor,
+      prof.usuario.correo_institucional,
+    ),
+  );
 
   const columns: Column<Profesor>[] = [
     {
@@ -236,7 +243,14 @@ const Profesores = () => {
       <div className="col-span-12">
         <SectionCard
           title="Listado"
-          subtitle={loading ? 'Cargando...' : `${profesores.length} profesor(es) registrado(s)`}
+          subtitle={loading ? 'Cargando...' : `${profesoresFiltrados.length} profesor(es)`}
+          actions={
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Buscar por nombre, documento, correo..."
+            />
+          }
         >
           {listError ? (
             <Banner tone="error" className="m-6">
@@ -244,10 +258,10 @@ const Profesores = () => {
             </Banner>
           ) : (
             <CrudTable
-              rows={profesores}
+              rows={profesoresFiltrados}
               getRowKey={(prof) => prof.id_profesor}
               loading={loading}
-              emptyMessage="No hay profesores registrados todavia."
+              emptyMessage="No hay profesores que coincidan con la busqueda."
               columns={columns}
             />
           )}
@@ -326,20 +340,6 @@ const Profesores = () => {
               required
             />
           </FormField>
-          <FormField label="Grupo" htmlFor="pgrupo">
-            <FormSelect
-              id="pgrupo"
-              value={form.id_grupo}
-              onChange={(e) => setField('id_grupo', e.target.value)}
-            >
-              <option value="">Sin grupo</option>
-              {grupos.map((g) => (
-                <option key={g.id_grupo} value={g.id_grupo}>
-                  {g.name_grupo}
-                </option>
-              ))}
-            </FormSelect>
-          </FormField>
           {!editing && (
             <>
               <FormField label="Correo institucional" htmlFor="pcorreo" required>
@@ -352,9 +352,8 @@ const Profesores = () => {
                 />
               </FormField>
               <FormField label="Contrasena inicial" htmlFor="ppwd" required>
-                <Input
+                <PasswordInput
                   id="ppwd"
-                  type="password"
                   value={form.password}
                   onChange={(e) => setField('password', e.target.value)}
                   minLength={8}

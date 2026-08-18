@@ -1,8 +1,9 @@
 import { api } from './api';
 import type { Asignatura, AsignaturaInput } from 'src/types/asignatura';
 
-export function listAsignaturas(): Promise<Asignatura[]> {
-  return api.get<Asignatura[]>('/asignaturas/');
+export function listAsignaturas(soloActivos = false): Promise<Asignatura[]> {
+  const q = soloActivos ? '?activo=true' : '';
+  return api.get<Asignatura[]>(`/asignaturas/${q}`);
 }
 
 export function createAsignatura(payload: AsignaturaInput): Promise<Asignatura> {

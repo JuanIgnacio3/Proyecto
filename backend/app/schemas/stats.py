@@ -18,7 +18,6 @@ class DashboardStats(BaseModel):
     encargados_activos: int
     grupos: int
     materias: int
-    subgrupos: int
     evaluaciones: int
     promedio_general_notas: float | None
     asistencia: AsistenciaResumen

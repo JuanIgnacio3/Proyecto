@@ -13,7 +13,6 @@ class ProfesorBase(BaseModel):
     phone_num_profesor: str | None = Field(default=None, max_length=20)
     id_tipo_documento: int
     num_documento_profesor: str = Field(min_length=1, max_length=30)
-    id_grupo: int | None = None
 
 
 class ProfesorCreate(ProfesorBase):
@@ -29,7 +28,6 @@ class ProfesorUpdate(BaseModel):
     phone_num_profesor: str | None = Field(default=None, max_length=20)
     id_tipo_documento: int | None = None
     num_documento_profesor: str | None = Field(default=None, min_length=1, max_length=30)
-    id_grupo: int | None = None
 
 
 class ProfesorOut(ProfesorBase):

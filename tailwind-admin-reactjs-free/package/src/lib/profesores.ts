@@ -1,8 +1,9 @@
 import { api } from './api';
 import type { Profesor, ProfesorCreate, ProfesorUpdate } from 'src/types/profesor';
 
-export function listProfesores(): Promise<Profesor[]> {
-  return api.get<Profesor[]>('/profesores/');
+export function listProfesores(soloActivos = false): Promise<Profesor[]> {
+  const q = soloActivos ? '?activo=true' : '';
+  return api.get<Profesor[]>(`/profesores/${q}`);
 }
 
 export function createProfesor(payload: ProfesorCreate): Promise<Profesor> {

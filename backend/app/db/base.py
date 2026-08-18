@@ -13,10 +13,8 @@ from app.models import (  # noqa: F401
     Grupo,
     Nota,
     Profesor,
+    ProfesorAsignaturaGrupo,
     Rol,
-    SubGrupo,
-    SubGrupoEstudiante,
-    SubGrupoProfesor,
     TipoDocumento,
     Usuario,
 )

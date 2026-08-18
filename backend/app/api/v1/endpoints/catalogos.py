@@ -5,11 +5,21 @@ from app.api import authz
 from app.api.deps import require_roles
 from app.db.session import get_db
 from app.models.grupo import Grupo
+from app.models.rol import Rol
 from app.models.tipo_documento import TipoDocumento
 from app.models.usuario import Usuario
 from app.schemas.catalogos import GrupoOut, TipoDocumentoOut
+from app.schemas.usuario import RolOut
 
 router = APIRouter()
+
+
+@router.get("/roles", response_model=list[RolOut])
+def list_roles(
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_roles("Administrador")),
+) -> list[Rol]:
+    return db.query(Rol).order_by(Rol.id_rol).all()
 
 
 @router.get("/tipos-documento", response_model=list[TipoDocumentoOut])

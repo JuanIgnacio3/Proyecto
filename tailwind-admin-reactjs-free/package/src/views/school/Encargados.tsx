@@ -9,9 +9,11 @@ import {
   FormSelect,
   PageHeader,
   RowActions,
+  SearchInput,
   SectionCard,
   StatusBadge,
   useConfirm,
+  PasswordInput,
   type Column,
 } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
@@ -21,6 +23,7 @@ import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import { canManagePersonas } from 'src/lib/roles';
+import { matchText } from 'src/lib/search';
 import {
   activateEncargado,
   createEncargado,
@@ -54,6 +57,7 @@ const Encargados = () => {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const { open, setOpen, editing, openCreate, openEdit } = useModal<Encargado>();
   const [form, setForm] = useState({ ...emptyForm });
@@ -80,7 +84,7 @@ const Encargados = () => {
   // Catalogos para el modal (tipos de documento + estudiantes de la M2M).
   useEffect(() => {
     if (!open) return;
-    Promise.all([listTiposDocumento(), listEstudiantes()])
+    Promise.all([listTiposDocumento(), listEstudiantes(undefined, true)])
       .then(([t, e]) => {
         setTipos(t);
         setEstudiantes(e);
@@ -178,6 +182,17 @@ const Encargados = () => {
     }
   };
 
+  const encargadosFiltrados = encargados.filter((enc) =>
+    matchText(
+      query,
+      enc.name_encargado,
+      enc.sec_name_encargado,
+      enc.parentesco,
+      enc.usuario.correo_institucional,
+      enc.estudiantes.map((e) => `${e.name_estudiante} ${e.sec_name_estudiante}`).join(' '),
+    ),
+  );
+
   const columns: Column<Encargado>[] = [
     {
       key: 'nombre',
@@ -254,7 +269,14 @@ const Encargados = () => {
       <div className="col-span-12">
         <SectionCard
           title="Listado"
-          subtitle={loading ? 'Cargando...' : `${encargados.length} encargado(s) registrado(s)`}
+          subtitle={loading ? 'Cargando...' : `${encargadosFiltrados.length} encargado(s)`}
+          actions={
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Buscar por nombre, parentesco, estudiante..."
+            />
+          }
         >
           {listError ? (
             <Banner tone="error" className="m-6">
@@ -262,10 +284,10 @@ const Encargados = () => {
             </Banner>
           ) : (
             <CrudTable
-              rows={encargados}
+              rows={encargadosFiltrados}
               getRowKey={(enc) => enc.id_encargado}
               loading={loading}
-              emptyMessage="No hay encargados registrados todavia."
+              emptyMessage="No hay encargados que coincidan con la busqueda."
               columns={columns}
             />
           )}
@@ -356,9 +378,8 @@ const Encargados = () => {
                 />
               </FormField>
               <FormField label="Contrasena inicial" htmlFor="epwd" required>
-                <Input
+                <PasswordInput
                   id="epwd"
-                  type="password"
                   value={form.password}
                   onChange={(e) => setField('password', e.target.value)}
                   minLength={8}

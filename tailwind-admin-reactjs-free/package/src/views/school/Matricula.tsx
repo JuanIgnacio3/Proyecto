@@ -1,10 +1,11 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState } from 'react';
 import CardBox from 'src/components/shared/CardBox';
-import { useConfirm } from 'src/components/institutional';
+import { FormSelect, SearchInput, useConfirm } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import { Label } from 'src/components/ui/label';
 import { ApiError } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import { listGrupos } from 'src/lib/grupos';
 import {
   listPorGrupo,
@@ -34,6 +35,14 @@ const Matricula = () => {
   const [grupoVer, setGrupoVer] = useState('');
   const [matriculados, setMatriculados] = useState<EstudianteMatricula[]>([]);
   const [loadingRoster, setLoadingRoster] = useState(false);
+
+  const [qPend, setQPend] = useState('');
+  const [qMat, setQMat] = useState('');
+
+  const matchEst = (e: EstudianteMatricula, q: string) =>
+    matchText(q, e.name_estudiante, e.sec_name_estudiante, e.num_documento_estudiante);
+  const pendientesFiltrados = pendientes.filter((e) => matchEst(e, qPend));
+  const matriculadosFiltrados = matriculados.filter((e) => matchEst(e, qMat));
 
   const loadPendientes = useCallback(async () => {
     try {
@@ -150,6 +159,15 @@ const Matricula = () => {
             <p className="text-sm text-muted-foreground">
               {pendientes.length} estudiante(s) sin grupo asignado.
             </p>
+            {pendientes.length > 0 && (
+              <div className="mt-3">
+                <SearchInput
+                  value={qPend}
+                  onChange={setQPend}
+                  placeholder="Buscar estudiante..."
+                />
+              </div>
+            )}
           </div>
 
           {pendientes.length === 0 ? (
@@ -159,9 +177,14 @@ const Matricula = () => {
           ) : (
             <>
               <div className="max-h-72 overflow-y-auto">
+                {pendientesFiltrados.length === 0 ? (
+                  <p className="px-6 py-6 text-center text-sm text-muted-foreground">
+                    Sin coincidencias.
+                  </p>
+                ) : (
                 <table className="w-full text-left">
                   <tbody>
-                    {pendientes.map((est) => (
+                    {pendientesFiltrados.map((est) => (
                       <tr key={est.id_estudiante} className="border-b border-ld last:border-0">
                         <td className="w-10 px-6 py-3">
                           <input
@@ -182,12 +205,13 @@ const Matricula = () => {
                     ))}
                   </tbody>
                 </table>
+                )}
               </div>
 
               <div className="flex flex-col gap-3 border-t border-ld px-6 py-4 sm:flex-row sm:items-end">
                 <div className="flex-1">
                   <Label htmlFor="grupoDestino">Matricular en</Label>
-                  <select
+                  <FormSelect
                     id="grupoDestino"
                     className={`${inputClass} mt-1`}
                     value={grupoDestino}
@@ -196,10 +220,11 @@ const Matricula = () => {
                     <option value="">Seleccione grupo...</option>
                     {grupos.map((g) => (
                       <option key={g.id_grupo} value={g.id_grupo}>
-                        {g.name_grupo} ({g.asignatura.name_asignatura})
+                        {g.name_grupo}
+                        {g.grado ? ` (${g.grado})` : ''}
                       </option>
                     ))}
-                  </select>
+                  </FormSelect>
                 </div>
                 <Button
                   onClick={handleMatricular}
@@ -219,7 +244,7 @@ const Matricula = () => {
           <div className="border-b border-ld px-6 py-4">
             <h2 className="text-lg font-semibold">Matriculados por grupo</h2>
             <div className="mt-2">
-              <select
+              <FormSelect
                 className={`${inputClass}`}
                 value={grupoVer}
                 onChange={(e) => setGrupoVer(e.target.value)}
@@ -227,11 +252,17 @@ const Matricula = () => {
                 <option value="">Seleccione un grupo...</option>
                 {grupos.map((g) => (
                   <option key={g.id_grupo} value={g.id_grupo}>
-                    {g.name_grupo} ({g.asignatura.name_asignatura})
+                    {g.name_grupo}
+                        {g.grado ? ` (${g.grado})` : ''}
                   </option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
+            {grupoVer && (
+              <div className="mt-3">
+                <SearchInput value={qMat} onChange={setQMat} placeholder="Buscar estudiante..." />
+              </div>
+            )}
           </div>
 
           {!grupoVer ? (
@@ -246,9 +277,14 @@ const Matricula = () => {
             </div>
           ) : (
             <div className="max-h-80 overflow-y-auto">
+              {matriculadosFiltrados.length === 0 ? (
+                <p className="px-6 py-6 text-center text-sm text-muted-foreground">
+                  Sin coincidencias.
+                </p>
+              ) : (
               <table className="w-full text-left">
                 <tbody>
-                  {matriculados.map((est) => (
+                  {matriculadosFiltrados.map((est) => (
                     <tr key={est.id_estudiante} className="border-b border-ld last:border-0">
                       <td className="px-6 py-3">
                         <p className="font-medium">
@@ -271,6 +307,7 @@ const Matricula = () => {
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
           )}
         </CardBox>

@@ -7,8 +7,12 @@ import type {
   TipoDocumento,
 } from 'src/types/estudiante';
 
-export function listEstudiantes(): Promise<Estudiante[]> {
-  return api.get<Estudiante[]>('/estudiantes/');
+export function listEstudiantes(idGrupo?: number, soloActivos = false): Promise<Estudiante[]> {
+  const params = new URLSearchParams();
+  if (idGrupo != null) params.set('id_grupo', String(idGrupo));
+  if (soloActivos) params.set('activo', 'true');
+  const q = params.toString();
+  return api.get<Estudiante[]>(`/estudiantes/${q ? `?${q}` : ''}`);
 }
 
 export function createEstudiante(payload: EstudianteCreate): Promise<Estudiante> {

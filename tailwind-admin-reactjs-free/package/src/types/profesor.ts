@@ -9,7 +9,6 @@ export interface Profesor {
   phone_num_profesor: string | null;
   id_tipo_documento: number;
   num_documento_profesor: string;
-  id_grupo: number | null;
   usuario: Usuario;
 }
 
@@ -23,7 +22,6 @@ export interface ProfesorCreate {
   phone_num_profesor?: string | null;
   id_tipo_documento: number;
   num_documento_profesor: string;
-  id_grupo?: number | null;
 }
 
 export interface ProfesorUpdate {
@@ -34,5 +32,4 @@ export interface ProfesorUpdate {
   phone_num_profesor?: string | null;
   id_tipo_documento: number;
   num_documento_profesor: string;
-  id_grupo?: number | null;
 }
