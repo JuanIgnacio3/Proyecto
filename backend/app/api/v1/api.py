@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     administrativos,
+    asignaciones,
     asignaturas,
     asistencia,
     auth,
@@ -17,11 +18,12 @@ from app.api.v1.endpoints import (
     profesores,
     reportes,
     stats,
-    subgrupos,
+    usuarios,
 )
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(usuarios.router, prefix="/usuarios", tags=["usuarios"])
 api_router.include_router(
     estudiantes.router, prefix="/estudiantes", tags=["estudiantes"]
 )
@@ -33,7 +35,9 @@ api_router.include_router(
     asignaturas.router, prefix="/asignaturas", tags=["asignaturas"]
 )
 api_router.include_router(grupos.router, prefix="/grupos", tags=["grupos"])
-api_router.include_router(subgrupos.router, prefix="/subgrupos", tags=["subgrupos"])
+api_router.include_router(
+    asignaciones.router, prefix="/asignaciones", tags=["asignaciones"]
+)
 api_router.include_router(asistencia.router, prefix="/asistencia", tags=["asistencia"])
 api_router.include_router(
     calificaciones.router, prefix="/evaluaciones", tags=["calificaciones"]

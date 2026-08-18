@@ -8,8 +8,7 @@ from app.db.session import get_db
 from app.models.asignatura import Asignatura
 from app.models.estudiante import Estudiante
 from app.models.grupo import Grupo
-from app.models.profesor import Profesor
-from app.models.subgrupo import SubGrupo
+from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
 from app.models.usuario import Usuario
 from app.schemas.grupo import GrupoCreate, GrupoOut, GrupoUpdate
 
@@ -44,8 +43,13 @@ def create_grupo(
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_roles("Administrador")),
 ) -> Grupo:
-    _ensure_asignatura(db, payload.id_asignatura)
-    grupo = Grupo(name_grupo=payload.name_grupo, id_asignatura=payload.id_asignatura)
+    if payload.id_asignatura is not None:
+        _ensure_asignatura(db, payload.id_asignatura)
+    grupo = Grupo(
+        name_grupo=payload.name_grupo,
+        grado=payload.grado,
+        id_asignatura=payload.id_asignatura,
+    )
     db.add(grupo)
     try:
         db.commit()
@@ -98,13 +102,18 @@ def delete_grupo(
 
     referenciado = (
         db.query(Estudiante).filter(Estudiante.id_grupo == id_grupo).first() is not None
-        or db.query(Profesor).filter(Profesor.id_grupo == id_grupo).first() is not None
-        or db.query(SubGrupo).filter(SubGrupo.id_grupo == id_grupo).first() is not None
+        or db.query(ProfesorAsignaturaGrupo)
+        .filter(
+            ProfesorAsignaturaGrupo.id_grupo == id_grupo,
+            ProfesorAsignaturaGrupo.activo.is_(True),
+        )
+        .first()
+        is not None
     )
     if referenciado:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="No se puede eliminar: hay estudiantes, profesores o subgrupos asociados",
+            detail="No se puede desactivar: hay estudiantes o asignaciones de profesor asociadas",
         )
 
     grupo.activo = False

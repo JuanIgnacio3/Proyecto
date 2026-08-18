@@ -13,4 +13,5 @@ class GrupoOut(BaseModel):
 
     id_grupo: int
     name_grupo: str
-    id_asignatura: int
+    grado: str | None = None
+    id_asignatura: int | None = None

@@ -13,7 +13,8 @@ class AsistenciaRegistroIn(BaseModel):
 
 
 class AsistenciaBatchIn(BaseModel):
-    id_grupo: int
+    id_profesor_asignatura_grupo: int
+    periodo: int = Field(ge=1, le=4)
     fecha: date
     registros: list[AsistenciaRegistroIn]
 
@@ -28,5 +29,7 @@ class AsistenciaRosterItem(BaseModel):
 
 class AsistenciaRosterOut(BaseModel):
     id_grupo: int
+    id_profesor_asignatura_grupo: int
+    periodo: int
     fecha: date
     registros: list[AsistenciaRosterItem]

@@ -7,6 +7,7 @@ import {
   FormField,
   PageHeader,
   RowActions,
+  SearchInput,
   SectionCard,
   StatusBadge,
   useConfirm,
@@ -17,6 +18,7 @@ import { Input } from 'src/components/ui/input';
 import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import {
   activateAsignatura,
   createAsignatura,
@@ -34,6 +36,7 @@ const Materias = () => {
   const [asignaturas, setAsignaturas] = useState<Asignatura[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const { open, setOpen, editing, openCreate, openEdit } = useModal<Asignatura>();
   const [nombre, setNombre] = useState('');
@@ -108,6 +111,8 @@ const Materias = () => {
     }
   };
 
+  const materiasFiltradas = asignaturas.filter((a) => matchText(query, a.name_asignatura));
+
   const columns: Column<Asignatura>[] = [
     {
       key: 'id',
@@ -154,7 +159,10 @@ const Materias = () => {
       <div className="col-span-12">
         <SectionCard
           title="Listado"
-          subtitle={loading ? 'Cargando...' : `${asignaturas.length} materia(s) registrada(s)`}
+          subtitle={loading ? 'Cargando...' : `${materiasFiltradas.length} materia(s)`}
+          actions={
+            <SearchInput value={query} onChange={setQuery} placeholder="Buscar materia..." />
+          }
         >
           {listError ? (
             <Banner tone="error" className="m-6">
@@ -162,10 +170,10 @@ const Materias = () => {
             </Banner>
           ) : (
             <CrudTable
-              rows={asignaturas}
+              rows={materiasFiltradas}
               getRowKey={(a) => a.id_asignatura}
               loading={loading}
-              emptyMessage="No hay materias registradas todavia."
+              emptyMessage="No hay materias que coincidan con la busqueda."
               columns={columns}
             />
           )}

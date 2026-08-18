@@ -8,9 +8,11 @@ import {
   FormSelect,
   PageHeader,
   RowActions,
+  SearchInput,
   SectionCard,
   StatusBadge,
   useConfirm,
+  PasswordInput,
   type Column,
 } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
@@ -19,6 +21,7 @@ import { useAuth } from 'src/context/auth-context';
 import { useModal } from 'src/hooks/useModal';
 import { getErrorMessage } from 'src/lib/api';
 import { canManagePersonas } from 'src/lib/roles';
+import { matchText } from 'src/lib/search';
 import {
   activateEstudiante,
   createEstudiante,
@@ -53,6 +56,7 @@ const Estudiantes = () => {
   const [grupos, setGrupos] = useState<Grupo[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const { open, setOpen, editing, openCreate, openEdit } = useModal<Estudiante>();
   const [form, setForm] = useState({ ...emptyForm });
@@ -172,6 +176,16 @@ const Estudiantes = () => {
     }
   };
 
+  const estudiantesFiltrados = estudiantes.filter((est) =>
+    matchText(
+      query,
+      est.name_estudiante,
+      est.sec_name_estudiante,
+      est.num_documento_estudiante,
+      est.usuario.correo_institucional,
+    ),
+  );
+
   const columns: Column<Estudiante>[] = [
     {
       key: 'nombre',
@@ -237,7 +251,14 @@ const Estudiantes = () => {
       <div className="col-span-12">
         <SectionCard
           title="Listado"
-          subtitle={loading ? 'Cargando...' : `${estudiantes.length} estudiante(s) registrado(s)`}
+          subtitle={loading ? 'Cargando...' : `${estudiantesFiltrados.length} estudiante(s)`}
+          actions={
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Buscar por nombre, documento, correo..."
+            />
+          }
         >
           {listError ? (
             <Banner tone="error" className="m-6">
@@ -245,10 +266,10 @@ const Estudiantes = () => {
             </Banner>
           ) : (
             <CrudTable
-              rows={estudiantes}
+              rows={estudiantesFiltrados}
               getRowKey={(est) => est.id_estudiante}
               loading={loading}
-              emptyMessage="No hay estudiantes registrados todavia."
+              emptyMessage="No hay estudiantes que coincidan con la busqueda."
               columns={columns}
             />
           )}
@@ -353,9 +374,8 @@ const Estudiantes = () => {
                 />
               </FormField>
               <FormField label="Contrasena inicial" htmlFor="pwd" required>
-                <Input
+                <PasswordInput
                   id="pwd"
-                  type="password"
                   value={form.password}
                   onChange={(e) => setField('password', e.target.value)}
                   minLength={8}

@@ -5,9 +5,7 @@ from app.models.asignatura import Asignatura
 from app.models.grupo import Grupo
 from app.models.estudiante import Estudiante
 from app.models.profesor import Profesor
-from app.models.subgrupo import SubGrupo
-from app.models.subgrupo_profesor import SubGrupoProfesor
-from app.models.subgrupo_estudiante import SubGrupoEstudiante
+from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
 from app.models.encargado import Encargado
 from app.models.encargado_estudiante import EncargadoEstudiante
 from app.models.asistencia import Asistencia
@@ -26,9 +24,7 @@ __all__ = [
     "Grupo",
     "Estudiante",
     "Profesor",
-    "SubGrupo",
-    "SubGrupoProfesor",
-    "SubGrupoEstudiante",
+    "ProfesorAsignaturaGrupo",
     "Encargado",
     "EncargadoEstudiante",
     "Asistencia",

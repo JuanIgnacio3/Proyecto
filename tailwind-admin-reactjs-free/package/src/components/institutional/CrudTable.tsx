@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
+import { usePagination } from 'src/hooks/usePagination';
 import { cn } from 'src/lib/utils';
 import EmptyState from './EmptyState';
 import LoadingState from './LoadingState';
+import Pagination from './Pagination';
 
 export type Column<T> = {
   key: string;
@@ -18,6 +20,8 @@ type CrudTableProps<T> = {
   getRowKey: (row: T) => string | number;
   loading?: boolean;
   emptyMessage?: string;
+  /** Filas por pagina (paginacion en cliente). */
+  pageSize?: number;
 };
 
 /**
@@ -31,49 +35,65 @@ function CrudTable<T>({
   getRowKey,
   loading,
   emptyMessage = 'No hay registros.',
+  pageSize = 10,
 }: CrudTableProps<T>) {
+  const { page, setPage, pageCount, pageItems, rangeStart, rangeEnd, total } = usePagination(
+    rows,
+    pageSize,
+  );
+
   if (loading) return <LoadingState />;
   if (rows.length === 0) return <EmptyState message={emptyMessage} />;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="border-b border-ld bg-muted/40">
-          <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                scope="col"
-                className={cn(
-                  'px-6 py-3 text-sm font-semibold',
-                  col.align === 'right' && 'text-right',
-                  col.headerClassName,
-                )}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={getRowKey(row)} className="border-b border-ld last:border-0">
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="border-b border-ld bg-muted/40">
+            <tr>
               {columns.map((col) => (
-                <td
+                <th
                   key={col.key}
+                  scope="col"
                   className={cn(
-                    'px-6 py-4',
+                    'px-6 py-3 text-sm font-semibold',
                     col.align === 'right' && 'text-right',
-                    col.className,
+                    col.headerClassName,
                   )}
                 >
-                  {col.render(row)}
-                </td>
+                  {col.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {pageItems.map((row) => (
+              <tr key={getRowKey(row)} className="border-b border-ld last:border-0">
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={cn(
+                      'px-6 py-4',
+                      col.align === 'right' && 'text-right',
+                      col.className,
+                    )}
+                  >
+                    {col.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Pagination
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        total={total}
+      />
     </div>
   );
 }

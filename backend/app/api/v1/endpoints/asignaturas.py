@@ -14,10 +14,16 @@ router = APIRouter()
 
 @router.get("/", response_model=list[AsignaturaOut])
 def list_asignaturas(
+    activo: bool | None = None,
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_roles("Administrador", "Profesor")),
 ) -> list[Asignatura]:
-    return db.query(Asignatura).order_by(Asignatura.id_asignatura).all()
+    query = db.query(Asignatura)
+    # Los desplegables piden activo=true para no ofrecer materias desactivadas;
+    # la vista de gestion no filtra (muestra todas con su estado para reactivar).
+    if activo is not None:
+        query = query.filter(Asignatura.activo.is_(activo))
+    return query.order_by(Asignatura.id_asignatura).all()
 
 
 @router.post("/", response_model=AsignaturaOut, status_code=status.HTTP_201_CREATED)

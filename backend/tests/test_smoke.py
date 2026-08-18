@@ -35,19 +35,23 @@ def test_dataset_determinista(data, db_session):
     from app.models.estudiante import Estudiante
     from app.models.grupo import Grupo
     from app.models.profesor import Profesor
-    from app.models.subgrupo import SubGrupo
+    from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
     from app.models.usuario import Usuario
 
     assert db_session.query(Rol).count() == 5
-    assert db_session.query(Usuario).count() == 8  # 5 roles login + 2 estudiantes + 1 encargado extra
+    # 5 logins de rol + 2 estudiantes extra + 1 encargado extra + 1 profesor extra.
+    assert db_session.query(Usuario).count() == 9
     assert db_session.query(Estudiante).count() == 3
     assert db_session.query(Grupo).count() == 2
-    assert db_session.query(Profesor).count() == 1
+    assert db_session.query(Profesor).count() == 2
     assert db_session.query(Encargado).count() == 2
-    assert db_session.query(SubGrupo).count() == 2
-    # El profesor imparte el grupo propio via subgrupo (id_grupo directo None).
-    assert data.prof.id_grupo is None
-    assert data.subgrupo_prof.id_grupo == data.grupo_prof.id_grupo
+    # El profesor imparte el grupo propio via una asignacion (no por id_grupo).
+    asignaciones_prof = (
+        db_session.query(ProfesorAsignaturaGrupo)
+        .filter(ProfesorAsignaturaGrupo.id_profesor == data.prof.id_profesor)
+        .all()
+    )
+    assert [a.id_grupo for a in asignaciones_prof] == [data.grupo_prof.id_grupo]
     # El encargado esta vinculado exactamente a est_prof.
     assert [e.id_estudiante for e in data.enc.estudiantes] == [data.est_prof.id_estudiante]
 

@@ -7,11 +7,10 @@ const ACCESO: Record<string, Acceso> = {
   Administrador: '*',
   Profesor: [
     '/',
-    '/estudiantes',
-    '/encargados',
+    // El profesor no gestiona la Comunidad educativa (estudiantes/encargados):
+    // trabaja con sus grupos, calificaciones, asistencia y reportes.
     '/grupos',
     '/materias',
-    '/subgrupos',
     '/asistencia',
     '/calificaciones',
     '/reportes',

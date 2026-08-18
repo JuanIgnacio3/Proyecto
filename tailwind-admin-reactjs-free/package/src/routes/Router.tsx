@@ -20,12 +20,12 @@ const Maintainance = Loadable(lazy(() => import('../views/authentication/Maintai
 // Dashboards
 const Modern = Loadable(lazy(() => import('../views/dashboards/Modern')));
 
+const Usuarios = Loadable(lazy(() => import('../views/school/Usuarios')));
 const Estudiantes = Loadable(lazy(() => import('../views/school/Estudiantes')));
 const Profesores = Loadable(lazy(() => import('../views/school/Profesores')));
 const Administrativos = Loadable(lazy(() => import('../views/school/Administrativos')));
 const Materias = Loadable(lazy(() => import('../views/school/Materias')));
 const Grupos = Loadable(lazy(() => import('../views/school/Grupos')));
-const Subgrupos = Loadable(lazy(() => import('../views/school/Subgrupos')));
 const Encargados = Loadable(lazy(() => import('../views/school/Encargados')));
 const Asistencia = Loadable(lazy(() => import('../views/school/Asistencia')));
 const Calificaciones = Loadable(lazy(() => import('../views/school/Calificaciones')));
@@ -50,12 +50,12 @@ const Router = [
         element: <FullLayout />,
         children: [
           { path: '/', element: <Modern /> },
+          { path: '/usuarios', element: <Usuarios /> },
           { path: '/estudiantes', element: <Estudiantes /> },
           { path: '/profesores', element: <Profesores /> },
           { path: '/administrativos', element: <Administrativos /> },
           { path: '/materias', element: <Materias /> },
           { path: '/grupos', element: <Grupos /> },
-          { path: '/subgrupos', element: <Subgrupos /> },
           { path: '/encargados', element: <Encargados /> },
           { path: '/asistencia', element: <Asistencia /> },
           { path: '/calificaciones', element: <Calificaciones /> },

@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
+  FormSelect,
+  Pagination,
   PublicationBadge,
+  SearchInput,
   StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
 } from 'src/components/institutional';
+import { usePagination } from 'src/hooks/usePagination';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -20,6 +24,7 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import {
   activateComunicado,
   createComunicado,
@@ -85,6 +90,7 @@ const Comunicados = () => {
 
   const [fVisibilidad, setFVisibilidad] = useState<Visibilidad>('todos');
   const [fCategoria, setFCategoria] = useState<'todas' | CategoriaPublica>('todas');
+  const [query, setQuery] = useState('');
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Comunicado | null>(null);
@@ -114,10 +120,13 @@ const Comunicados = () => {
         if (fVisibilidad === 'publicos' && !c.es_publico) return false;
         if (fVisibilidad === 'privados' && c.es_publico) return false;
         if (fCategoria !== 'todas' && c.categoria !== fCategoria) return false;
+        if (!matchText(query, c.titulo, c.cuerpo, c.categoria, c.dirigido_a, c.autor_correo))
+          return false;
         return true;
       }),
-    [comunicados, fVisibilidad, fCategoria],
+    [comunicados, fVisibilidad, fCategoria, query],
   );
+  const paginacion = usePagination(visibles, 6);
 
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -211,12 +220,13 @@ const Comunicados = () => {
         filteredEmptyMessage="Ningún comunicado coincide con el filtro seleccionado."
         filters={
           <>
+            <SearchInput value={query} onChange={setQuery} placeholder="Buscar comunicado..." />
             <VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />
             <div className="flex items-center gap-2">
               <Label htmlFor="fcat" className="text-sm text-muted-foreground">
                 Categoría
               </Label>
-              <select
+              <FormSelect
                 id="fcat"
                 className={`${inputClass} w-auto`}
                 value={fCategoria}
@@ -228,12 +238,12 @@ const Comunicados = () => {
                     {c}
                   </option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
           </>
         }
       >
-        {visibles.map((c) => (
+        {paginacion.pageItems.map((c) => (
           <div key={c.id_comunicado} className="col-span-12 lg:col-span-6">
             <CardBox className="flex h-full flex-col p-6">
               <div className="flex items-start justify-between gap-3">
@@ -283,6 +293,21 @@ const Comunicados = () => {
             </CardBox>
           </div>
         ))}
+        {visibles.length > 0 && (
+          <div className="col-span-12">
+            <CardBox className="p-0">
+              <Pagination
+                className="border-t-0"
+                page={paginacion.page}
+                pageCount={paginacion.pageCount}
+                onPageChange={paginacion.setPage}
+                rangeStart={paginacion.rangeStart}
+                rangeEnd={paginacion.rangeEnd}
+                total={paginacion.total}
+              />
+            </CardBox>
+          </div>
+        )}
       </CrudScaffold>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -311,7 +336,7 @@ const Comunicados = () => {
 
             <div className="mb-4">
               <Label htmlFor="cdirigido">Dirigido a</Label>
-              <select
+              <FormSelect
                 id="cdirigido"
                 className={`${inputClass} mt-1`}
                 value={form.dirigido_a}
@@ -322,7 +347,7 @@ const Comunicados = () => {
                     {a}
                   </option>
                 ))}
-              </select>
+              </FormSelect>
             </div>
 
             <div>
@@ -350,7 +375,7 @@ const Comunicados = () => {
             {form.es_publico && (
               <div className="mt-4">
                 <Label htmlFor="ccategoria">Categoría del sitio web</Label>
-                <select
+                <FormSelect
                   id="ccategoria"
                   className={`${inputClass} mt-1`}
                   value={form.categoria}
@@ -362,7 +387,7 @@ const Comunicados = () => {
                       {c}
                     </option>
                   ))}
-                </select>
+                </FormSelect>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Se muestra como etiqueta en la sección Noticias del sitio.
                 </p>

@@ -15,7 +15,6 @@ export interface DashboardStats {
   encargados_activos: number;
   grupos: number;
   materias: number;
-  subgrupos: number;
   evaluaciones: number;
   promedio_general_notas: number | null;
   asistencia: AsistenciaResumen;

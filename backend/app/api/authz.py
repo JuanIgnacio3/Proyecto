@@ -16,7 +16,7 @@ Politica (aprobada):
   - Administrador: acceso total.
   - Administrativo: acceso total (comportamiento ACTUAL preservado; restringirlo
     es una decision de negocio PENDIENTE).
-  - Profesor: solo sus grupos (union del grupo directo y los de sus subgrupos) y
+  - Profesor: solo los grupos de sus asignaciones (ProfesorAsignaturaGrupo) y
     los estudiantes de esos grupos.
   - Encargado: solo los estudiantes vinculados por EncargadoEstudiante.
   - Estudiante: solo su propia informacion.
@@ -42,8 +42,7 @@ from app.models.estudiante import Estudiante
 from app.models.evaluacion import Evaluacion
 from app.models.grupo import Grupo
 from app.models.profesor import Profesor
-from app.models.subgrupo import SubGrupo
-from app.models.subgrupo_profesor import SubGrupoProfesor
+from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
 from app.models.usuario import Usuario
 
 
@@ -70,19 +69,13 @@ _UNSET: object = object()
 
 
 def _grupos_de_profesor(db: Session, profesor: Profesor) -> set[int]:
-    """UNICO lugar que resuelve la dualidad del modelo Profesor.id_grupo +
-    SubGrupoProfesor: los grupos que imparte un profesor = union del grupo directo
-    y los grupos de sus subgrupos. Si el modelo cambia, solo cambia esta funcion."""
-    grupos: set[int] = set()
-    if profesor.id_grupo is not None:
-        grupos.add(profesor.id_grupo)
-    filas = (
-        db.query(SubGrupo.id_grupo)
-        .join(SubGrupoProfesor, SubGrupoProfesor.id_subgrupo == SubGrupo.id_subgrupo)
-        .filter(SubGrupoProfesor.id_profesor == profesor.id_profesor)
+    """UNICO lugar que resuelve los grupos de un profesor: los de sus asignaciones
+    activas (ProfesorAsignaturaGrupo). Si el modelo cambia, solo cambia esta funcion."""
+    filas = db.query(ProfesorAsignaturaGrupo.id_grupo).filter(
+        ProfesorAsignaturaGrupo.id_profesor == profesor.id_profesor,
+        ProfesorAsignaturaGrupo.activo.is_(True),
     )
-    grupos.update(g for (g,) in filas)
-    return grupos
+    return {g for (g,) in filas}
 
 
 class AuthzContext:
@@ -159,9 +152,6 @@ class AuthzContext:
     def scope_grupos(self, query: Query) -> Query:
         return self._scope_by_groups(query, Grupo.id_grupo)
 
-    def scope_subgrupos(self, query: Query) -> Query:
-        return self._scope_by_groups(query, SubGrupo.id_grupo)
-
     def scope_evaluaciones(self, query: Query) -> Query:
         return self._scope_by_groups(query, Evaluacion.id_grupo)
 
@@ -170,16 +160,6 @@ class AuthzContext:
 
     def assert_grupo(self, id_grupo: int) -> None:
         self._assert_group(id_grupo)
-
-    def assert_subgrupo(self, id_subgrupo: int) -> None:
-        if self._acceso_total:
-            return
-        subgrupo = self._db.get(SubGrupo, id_subgrupo)
-        if subgrupo is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Subgrupo no encontrado"
-            )
-        self._assert_group(subgrupo.id_grupo)
 
     def assert_evaluacion(self, id_evaluacion: int) -> None:
         if self._acceso_total:

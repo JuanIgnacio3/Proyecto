@@ -7,42 +7,55 @@ from app.api import authz
 from app.db.session import get_db
 from app.models.asistencia import Asistencia
 from app.models.estudiante import Estudiante
-from app.models.grupo import Grupo
+from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
+from app.models.usuario import Usuario
 from app.schemas.asistencia import AsistenciaBatchIn, AsistenciaRosterOut
 
 router = APIRouter()
 
 
-def _ensure_grupo(db: Session, id_grupo: int) -> None:
-    if db.get(Grupo, id_grupo) is None:
+def _grupo_de_clase(db: Session, id_clase: int) -> int:
+    """Valida la clase (asignacion profesor+materia+grupo) y devuelve su grupo."""
+    asignacion = db.get(ProfesorAsignaturaGrupo, id_clase)
+    if asignacion is None or not asignacion.activo:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="El grupo indicado no existe"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La clase indicada no existe o esta inactiva",
         )
+    return asignacion.id_grupo
+
+
+def _estudiantes_activos(db: Session, id_grupo: int):
+    return (
+        db.query(Estudiante)
+        .filter(
+            Estudiante.id_grupo == id_grupo,
+            Estudiante.usuario.has(Usuario.activo.is_(True)),
+        )
+        .order_by(Estudiante.name_estudiante, Estudiante.sec_name_estudiante)
+    )
 
 
 @router.get("/", response_model=AsistenciaRosterOut)
 def get_roster(
-    id_grupo: int,
+    id_profesor_asignatura_grupo: int,
+    periodo: int,
     fecha: date,
     db: Session = Depends(get_db),
     ctx: authz.AuthzContext = Depends(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> AsistenciaRosterOut:
-    _ensure_grupo(db, id_grupo)
+    id_grupo = _grupo_de_clase(db, id_profesor_asignatura_grupo)
     ctx.assert_grupo(id_grupo)
 
-    estudiantes = (
-        db.query(Estudiante)
-        .filter(Estudiante.id_grupo == id_grupo)
-        .order_by(Estudiante.name_estudiante, Estudiante.sec_name_estudiante)
-        .all()
-    )
+    estudiantes = _estudiantes_activos(db, id_grupo).all()
     registros_previos = {
         a.id_estudiante: a
-        for a in db.query(Asistencia)
-        .filter(Asistencia.id_grupo == id_grupo, Asistencia.fecha == fecha)
-        .all()
+        for a in db.query(Asistencia).filter(
+            Asistencia.id_profesor_asignatura_grupo == id_profesor_asignatura_grupo,
+            Asistencia.fecha == fecha,
+        )
     }
 
     registros = []
@@ -58,7 +71,13 @@ def get_roster(
             }
         )
 
-    return AsistenciaRosterOut(id_grupo=id_grupo, fecha=fecha, registros=registros)
+    return AsistenciaRosterOut(
+        id_grupo=id_grupo,
+        id_profesor_asignatura_grupo=id_profesor_asignatura_grupo,
+        periodo=periodo,
+        fecha=fecha,
+        registros=registros,
+    )
 
 
 @router.put("/", response_model=AsistenciaRosterOut)
@@ -69,21 +88,17 @@ def save_roster(
         authz.require(authz.Policy.GROUP, roles=("Administrador", "Profesor"))
     ),
 ) -> AsistenciaRosterOut:
-    _ensure_grupo(db, payload.id_grupo)
-    ctx.assert_grupo(payload.id_grupo)
+    id_clase = payload.id_profesor_asignatura_grupo
+    id_grupo = _grupo_de_clase(db, id_clase)
+    ctx.assert_grupo(id_grupo)
 
-    estudiantes_validos = {
-        e.id_estudiante
-        for e in db.query(Estudiante.id_estudiante)
-        .filter(Estudiante.id_grupo == payload.id_grupo)
-        .all()
-    }
-
+    estudiantes_validos = {e.id_estudiante for e in _estudiantes_activos(db, id_grupo).all()}
     existentes = {
         a.id_estudiante: a
-        for a in db.query(Asistencia)
-        .filter(Asistencia.id_grupo == payload.id_grupo, Asistencia.fecha == payload.fecha)
-        .all()
+        for a in db.query(Asistencia).filter(
+            Asistencia.id_profesor_asignatura_grupo == id_clase,
+            Asistencia.fecha == payload.fecha,
+        )
     }
 
     for registro in payload.registros:
@@ -97,16 +112,19 @@ def save_roster(
             db.add(
                 Asistencia(
                     id_estudiante=registro.id_estudiante,
-                    id_grupo=payload.id_grupo,
+                    id_grupo=id_grupo,
+                    id_profesor_asignatura_grupo=id_clase,
+                    periodo=payload.periodo,
                     fecha=payload.fecha,
                     estado=registro.estado,
                     observacion=registro.observacion,
                 )
             )
         else:
+            actual.periodo = payload.periodo
             actual.estado = registro.estado
             actual.observacion = registro.observacion
 
     db.commit()
 
-    return get_roster(payload.id_grupo, payload.fecha, db=db, ctx=ctx)
+    return get_roster(id_clase, payload.periodo, payload.fecha, db=db, ctx=ctx)

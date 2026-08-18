@@ -1,15 +1,16 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CardBox from 'src/components/shared/CardBox';
+import { FormSelect } from 'src/components/institutional';
 import { Button } from 'src/components/ui/button';
 import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { listMisClases } from 'src/lib/asignaciones';
 import { getRoster, saveRoster } from 'src/lib/asistencia';
-import { listGrupos } from 'src/lib/grupos';
+import type { Asignacion } from 'src/types/asignacion';
 import type { EstadoAsistencia } from 'src/types/asistencia';
-import type { Grupo } from 'src/types/grupo';
 
 const ESTADOS: EstadoAsistencia[] = ['Presente', 'Ausente', 'Tardia', 'Justificado'];
 
@@ -37,8 +38,9 @@ const Asistencia = () => {
   const { user } = useAuth();
   const canEdit = user?.rol.name_rol === 'Administrador' || user?.rol.name_rol === 'Profesor';
 
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [idGrupo, setIdGrupo] = useState('');
+  const [clases, setClases] = useState<Asignacion[]>([]);
+  const [idClase, setIdClase] = useState('');
+  const [periodo, setPeriodo] = useState('1');
   const [fecha, setFecha] = useState(today());
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -49,18 +51,18 @@ const Asistencia = () => {
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    listGrupos()
-      .then(setGrupos)
-      .catch(() => setError('No se pudieron cargar los grupos.'));
+    listMisClases()
+      .then(setClases)
+      .catch(() => setError('No se pudieron cargar las clases.'));
   }, []);
 
   const loadRoster = useCallback(async () => {
-    if (!idGrupo) return;
+    if (!idClase) return;
     setLoading(true);
     setError(null);
     setSavedMsg(null);
     try {
-      const roster = await getRoster(Number(idGrupo), fecha);
+      const roster = await getRoster(Number(idClase), Number(periodo), fecha);
       setRows(
         roster.registros.map((r) => ({
           id_estudiante: r.id_estudiante,
@@ -78,13 +80,13 @@ const Asistencia = () => {
     } finally {
       setLoading(false);
     }
-  }, [idGrupo, fecha]);
+  }, [idClase, periodo, fecha]);
 
   useEffect(() => {
     setLoaded(false);
     setRows([]);
     setSavedMsg(null);
-  }, [idGrupo, fecha]);
+  }, [idClase, periodo, fecha]);
 
   const setEstado = (id: number, estado: EstadoAsistencia) =>
     setRows((prev) => prev.map((r) => (r.id_estudiante === id ? { ...r, estado } : r)));
@@ -111,7 +113,8 @@ const Asistencia = () => {
     setSavedMsg(null);
     try {
       await saveRoster({
-        id_grupo: Number(idGrupo),
+        id_profesor_asignatura_grupo: Number(idClase),
+        periodo: Number(periodo),
         fecha,
         registros: rows.map((r) => ({
           id_estudiante: r.id_estudiante,
@@ -138,27 +141,43 @@ const Asistencia = () => {
             <div>
               <h1 className="text-2xl font-semibold">Asistencia</h1>
               <p className="mt-1 text-muted-foreground">
-                Tome lista por grupo y fecha. Los estados se guardan por estudiante.
+                Tome lista por clase (materia) y fecha. Los estados se guardan por estudiante.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <Label htmlFor="grupo">Grupo</Label>
-              <select
-                id="grupo"
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="sm:col-span-2">
+              <Label htmlFor="clase">Clase</Label>
+              <FormSelect
+                id="clase"
                 className={`${inputClass} mt-1`}
-                value={idGrupo}
-                onChange={(e) => setIdGrupo(e.target.value)}
+                value={idClase}
+                onChange={(e) => setIdClase(e.target.value)}
               >
                 <option value="">Seleccione...</option>
-                {grupos.map((g) => (
-                  <option key={g.id_grupo} value={g.id_grupo}>
-                    {g.name_grupo} ({g.asignatura.name_asignatura})
+                {clases.map((c) => (
+                  <option
+                    key={c.id_profesor_asignatura_grupo}
+                    value={c.id_profesor_asignatura_grupo}
+                  >
+                    {c.grupo.name_grupo} — {c.asignatura.name_asignatura} ({c.profesor.name_profesor}{' '}
+                    {c.profesor.sec_name_profesor})
                   </option>
                 ))}
-              </select>
+              </FormSelect>
+            </div>
+            <div>
+              <Label htmlFor="periodo">Periodo</Label>
+              <FormSelect
+                id="periodo"
+                className={`${inputClass} mt-1`}
+                value={periodo}
+                onChange={(e) => setPeriodo(e.target.value)}
+              >
+                <option value="1">I</option>
+                <option value="2">II</option>
+              </FormSelect>
             </div>
             <div>
               <Label htmlFor="fecha">Fecha</Label>
@@ -170,8 +189,8 @@ const Asistencia = () => {
                 onChange={(e) => setFecha(e.target.value)}
               />
             </div>
-            <div className="flex items-end">
-              <Button onClick={loadRoster} disabled={!idGrupo || loading} className="w-full">
+            <div className="flex items-end sm:col-span-4">
+              <Button onClick={loadRoster} disabled={!idClase || loading} className="w-full">
                 {loading ? 'Cargando...' : 'Cargar lista'}
               </Button>
             </div>

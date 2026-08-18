@@ -1,7 +1,14 @@
 import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import CardBox from 'src/components/shared/CardBox';
-import { StatusBadge, useConfirm } from 'src/components/institutional';
+import {
+  FormSelect,
+  Pagination,
+  SearchInput,
+  StatusBadge,
+  useConfirm,
+} from 'src/components/institutional';
+import { usePagination } from 'src/hooks/usePagination';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -13,6 +20,7 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import {
   activateEvaluacion,
   createEvaluacion,
@@ -22,11 +30,13 @@ import {
   saveNotas,
   updateEvaluacion,
 } from 'src/lib/calificaciones';
-import { listGrupos } from 'src/lib/grupos';
-import type { Evaluacion } from 'src/types/calificaciones';
-import type { Grupo } from 'src/types/grupo';
+import { listMisClases } from 'src/lib/asignaciones';
+import type { Asignacion } from 'src/types/asignacion';
+import type { Evaluacion, TipoRubro } from 'src/types/calificaciones';
 
-const emptyForm = { name_evaluacion: '', periodo: '1', porcentaje: '', fecha: '' };
+const RUBROS: TipoRubro[] = ['Examen', 'Tarea', 'Cotidiano'];
+
+const emptyForm = { name_evaluacion: '', tipo: 'Examen', periodo: '1', porcentaje: '', fecha: '' };
 
 const inputClass =
   'flex h-10 w-full border border-ld rounded-lg bg-transparent px-3 py-2 text-sm text-ld focus-visible:border-primary focus-visible:outline-0';
@@ -43,11 +53,23 @@ const Calificaciones = () => {
   const { confirm, notify } = useConfirm();
   const canEdit = user?.rol.name_rol === 'Administrador' || user?.rol.name_rol === 'Profesor';
 
-  const [grupos, setGrupos] = useState<Grupo[]>([]);
-  const [idGrupo, setIdGrupo] = useState('');
+  const [clases, setClases] = useState<Asignacion[]>([]);
+  const [idClase, setIdClase] = useState('');
   const [evaluaciones, setEvaluaciones] = useState<Evaluacion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+
+  const evaluacionesFiltradas = evaluaciones.filter((ev) =>
+    matchText(
+      query,
+      ev.name_evaluacion,
+      ev.asignacion?.asignatura.name_asignatura,
+      ev.asignacion?.profesor.name_profesor,
+      ev.asignacion?.profesor.sec_name_profesor,
+    ),
+  );
+  const paginacion = usePagination(evaluacionesFiltradas, 10);
 
   // Modal evaluacion
   const [open, setOpen] = useState(false);
@@ -65,20 +87,20 @@ const Calificaciones = () => {
   const [notasLoading, setNotasLoading] = useState(false);
 
   useEffect(() => {
-    listGrupos()
-      .then(setGrupos)
-      .catch(() => setError('No se pudieron cargar los grupos.'));
+    listMisClases()
+      .then(setClases)
+      .catch(() => setError('No se pudieron cargar las clases.'));
   }, []);
 
-  const loadEvaluaciones = useCallback(async (grupo: string) => {
-    if (!grupo) {
+  const loadEvaluaciones = useCallback(async (clase: string) => {
+    if (!clase) {
       setEvaluaciones([]);
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      setEvaluaciones(await listEvaluaciones(Number(grupo)));
+      setEvaluaciones(await listEvaluaciones(Number(clase)));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudieron cargar las evaluaciones.');
     } finally {
@@ -87,8 +109,8 @@ const Calificaciones = () => {
   }, []);
 
   useEffect(() => {
-    loadEvaluaciones(idGrupo);
-  }, [idGrupo, loadEvaluaciones]);
+    loadEvaluaciones(idClase);
+  }, [idClase, loadEvaluaciones]);
 
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -104,6 +126,7 @@ const Calificaciones = () => {
     setEditing(ev);
     setForm({
       name_evaluacion: ev.name_evaluacion,
+      tipo: ev.tipo,
       periodo: String(ev.periodo),
       porcentaje: String(ev.porcentaje),
       fecha: ev.fecha ?? '',
@@ -117,20 +140,24 @@ const Calificaciones = () => {
     setFormError(null);
     setSaving(true);
     try {
-      const payload = {
+      const base = {
         name_evaluacion: form.name_evaluacion,
+        tipo: form.tipo as TipoRubro,
         periodo: Number(form.periodo),
         porcentaje: Number(form.porcentaje),
         fecha: form.fecha || null,
-        id_grupo: Number(idGrupo),
       };
       if (editing) {
-        await updateEvaluacion(editing.id_evaluacion, payload);
+        // La edicion no cambia la asignacion; solo los datos de la evaluacion.
+        await updateEvaluacion(editing.id_evaluacion, base);
       } else {
-        await createEvaluacion(payload);
+        await createEvaluacion({
+          ...base,
+          id_profesor_asignatura_grupo: Number(idClase),
+        });
       }
       setOpen(false);
-      await loadEvaluaciones(idGrupo);
+      await loadEvaluaciones(idClase);
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : 'No se pudo guardar la evaluacion.');
     } finally {
@@ -149,7 +176,7 @@ const Calificaciones = () => {
       return;
     try {
       await deleteEvaluacion(ev.id_evaluacion);
-      await loadEvaluaciones(idGrupo);
+      await loadEvaluaciones(idClase);
     } catch (err) {
       await notify(err instanceof ApiError ? err.message : 'No se pudo desactivar.');
     }
@@ -158,7 +185,7 @@ const Calificaciones = () => {
   const handleActivate = async (ev: Evaluacion) => {
     try {
       await activateEvaluacion(ev.id_evaluacion);
-      await loadEvaluaciones(idGrupo);
+      await loadEvaluaciones(idClase);
     } catch (err) {
       await notify(err instanceof ApiError ? err.message : 'No se pudo activar.');
     }
@@ -220,26 +247,30 @@ const Calificaciones = () => {
             <div>
               <h1 className="text-2xl font-semibold">Calificaciones</h1>
               <p className="mt-1 text-muted-foreground">
-                Evaluaciones por grupo y periodo. Ingrese las notas por estudiante.
+                Evaluaciones por clase (materia) y periodo. Ingrese las notas por estudiante.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 max-w-sm">
-            <Label htmlFor="grupo">Grupo</Label>
-            <select
-              id="grupo"
+          <div className="mt-5 max-w-md">
+            <Label htmlFor="clase">Clase</Label>
+            <FormSelect
+              id="clase"
               className={`${inputClass} mt-1`}
-              value={idGrupo}
-              onChange={(e) => setIdGrupo(e.target.value)}
+              value={idClase}
+              onChange={(e) => setIdClase(e.target.value)}
             >
               <option value="">Seleccione...</option>
-              {grupos.map((g) => (
-                <option key={g.id_grupo} value={g.id_grupo}>
-                  {g.name_grupo} ({g.asignatura.name_asignatura})
+              {clases.map((c) => (
+                <option
+                  key={c.id_profesor_asignatura_grupo}
+                  value={c.id_profesor_asignatura_grupo}
+                >
+                  {c.grupo.name_grupo} — {c.asignatura.name_asignatura} ({c.profesor.name_profesor}{' '}
+                  {c.profesor.sec_name_profesor})
                 </option>
               ))}
-            </select>
+            </FormSelect>
           </div>
         </CardBox>
       </div>
@@ -250,36 +281,44 @@ const Calificaciones = () => {
         </div>
       )}
 
-      {idGrupo && (
+      {idClase && (
         <div className="col-span-12">
           <CardBox className="p-0 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-ld px-6 py-4">
+            <div className="flex flex-col gap-3 border-b border-ld px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Evaluaciones</h2>
                 <p className="text-sm text-muted-foreground">
-                  {loading ? 'Cargando...' : `${evaluaciones.length} evaluacion(es)`}
+                  {loading ? 'Cargando...' : `${evaluacionesFiltradas.length} evaluacion(es)`}
                 </p>
               </div>
-              {canEdit && (
-                <Button onClick={openCreate} size="sm">
-                  <Icon icon="solar:add-circle-linear" width={18} height={18} />
-                  Nueva evaluacion
-                </Button>
-              )}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <SearchInput
+                  value={query}
+                  onChange={setQuery}
+                  placeholder="Buscar evaluacion, materia..."
+                />
+                {canEdit && (
+                  <Button onClick={openCreate} size="sm">
+                    <Icon icon="solar:add-circle-linear" width={18} height={18} />
+                    Nueva evaluacion
+                  </Button>
+                )}
+              </div>
             </div>
 
-            {!loading && evaluaciones.length === 0 && (
+            {!loading && evaluacionesFiltradas.length === 0 && (
               <div className="px-6 py-10 text-center text-muted-foreground">
-                Este grupo no tiene evaluaciones todavia.
+                No hay evaluaciones que coincidan con la busqueda.
               </div>
             )}
 
-            {evaluaciones.length > 0 && (
+            {evaluacionesFiltradas.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="border-b border-ld bg-muted/40">
                     <tr>
                       <th className="px-6 py-3 text-sm font-semibold">Evaluacion</th>
+                      <th className="px-6 py-3 text-sm font-semibold">Rubro</th>
                       <th className="px-6 py-3 text-sm font-semibold">Periodo</th>
                       <th className="px-6 py-3 text-sm font-semibold">Porcentaje</th>
                       <th className="px-6 py-3 text-sm font-semibold">Fecha</th>
@@ -288,9 +327,10 @@ const Calificaciones = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {evaluaciones.map((ev) => (
+                    {paginacion.pageItems.map((ev) => (
                       <tr key={ev.id_evaluacion} className="border-b border-ld last:border-0">
                         <td className="px-6 py-4 font-medium">{ev.name_evaluacion}</td>
+                        <td className="px-6 py-4 text-muted-foreground">{ev.tipo}</td>
                         <td className="px-6 py-4 text-muted-foreground">{ev.periodo}</td>
                         <td className="px-6 py-4 text-muted-foreground">{ev.porcentaje}%</td>
                         <td className="px-6 py-4 text-muted-foreground">{ev.fecha ?? '-'}</td>
@@ -338,6 +378,16 @@ const Calificaciones = () => {
                 </table>
               </div>
             )}
+            {evaluacionesFiltradas.length > 0 && (
+              <Pagination
+                page={paginacion.page}
+                pageCount={paginacion.pageCount}
+                onPageChange={paginacion.setPage}
+                rangeStart={paginacion.rangeStart}
+                rangeEnd={paginacion.rangeEnd}
+                total={paginacion.total}
+              />
+            )}
           </CardBox>
         </div>
       )}
@@ -369,8 +419,23 @@ const Calificaciones = () => {
                 />
               </div>
               <div>
+                <Label htmlFor="evtipo">Rubro</Label>
+                <FormSelect
+                  id="evtipo"
+                  className={`${inputClass} mt-1`}
+                  value={form.tipo}
+                  onChange={(e) => setField('tipo', e.target.value)}
+                >
+                  {RUBROS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </FormSelect>
+              </div>
+              <div>
                 <Label htmlFor="evperiodo">Periodo</Label>
-                <select
+                <FormSelect
                   id="evperiodo"
                   className={`${inputClass} mt-1`}
                   value={form.periodo}
@@ -378,8 +443,7 @@ const Calificaciones = () => {
                 >
                   <option value="1">I</option>
                   <option value="2">II</option>
-                  <option value="3">III</option>
-                </select>
+                </FormSelect>
               </div>
               <div>
                 <Label htmlFor="evporcentaje">Porcentaje</Label>

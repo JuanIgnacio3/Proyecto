@@ -100,11 +100,6 @@ const ModernDash = () => {
     ? [
         { label: 'Grupos', value: stats.grupos, icon: 'solar:layers-linear' },
         { label: 'Materias', value: stats.materias, icon: 'solar:notebook-bookmark-linear' },
-        {
-          label: 'Subgrupos',
-          value: stats.subgrupos,
-          icon: 'solar:users-group-two-rounded-linear',
-        },
         { label: 'Encargados', value: stats.encargados_activos, icon: 'solar:user-hand-up-linear' },
       ]
     : [];

@@ -2,12 +2,15 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
+  Pagination,
   PublicationBadge,
+  SearchInput,
   StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
 } from 'src/components/institutional';
+import { usePagination } from 'src/hooks/usePagination';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -28,6 +31,7 @@ import {
   updateEspecialidad,
 } from 'src/lib/especialidades';
 import { canManageEspecialidades } from 'src/lib/roles';
+import { matchText } from 'src/lib/search';
 import type { Especialidad, EspecialidadInput } from 'src/types/especialidad';
 
 const inputClass =
@@ -51,6 +55,7 @@ const Especialidades = () => {
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
   const [fVisibilidad, setFVisibilidad] = useState<Visibilidad>('todos');
+  const [query, setQuery] = useState('');
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Especialidad | null>(null);
@@ -81,10 +86,12 @@ const Especialidades = () => {
       especialidades.filter((e) => {
         if (fVisibilidad === 'publicos' && !e.es_publico) return false;
         if (fVisibilidad === 'privados' && e.es_publico) return false;
+        if (!matchText(query, e.nombre, e.nivel, e.descripcion)) return false;
         return true;
       }),
-    [especialidades, fVisibilidad],
+    [especialidades, fVisibilidad, query],
   );
+  const paginacion = usePagination(visibles, 6);
 
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -179,9 +186,14 @@ const Especialidades = () => {
         shown={visibles.length}
         emptyMessage='No hay especialidades. Crea la primera con "Nueva especialidad".'
         filteredEmptyMessage="Ninguna especialidad coincide con el filtro seleccionado."
-        filters={<VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />}
+        filters={
+          <>
+            <SearchInput value={query} onChange={setQuery} placeholder="Buscar especialidad..." />
+            <VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />
+          </>
+        }
       >
-        {visibles.map((e) => (
+        {paginacion.pageItems.map((e) => (
           <div key={e.id_especialidad} className="col-span-12 lg:col-span-6">
             <CardBox className="flex h-full flex-col p-6">
               <div className="flex items-start justify-between gap-3">
@@ -218,6 +230,21 @@ const Especialidades = () => {
             </CardBox>
           </div>
         ))}
+        {visibles.length > 0 && (
+          <div className="col-span-12">
+            <CardBox className="p-0">
+              <Pagination
+                className="border-t-0"
+                page={paginacion.page}
+                pageCount={paginacion.pageCount}
+                onPageChange={paginacion.setPage}
+                rangeStart={paginacion.rangeStart}
+                rangeEnd={paginacion.rangeEnd}
+                total={paginacion.total}
+              />
+            </CardBox>
+          </div>
+        )}
       </CrudScaffold>
 
       <Dialog open={open} onOpenChange={setOpen}>

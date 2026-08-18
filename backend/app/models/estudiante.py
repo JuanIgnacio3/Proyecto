@@ -27,4 +27,3 @@ class Estudiante(Base):
     usuario: Mapped["Usuario"] = relationship(back_populates="estudiante")
     tipo_documento: Mapped["TipoDocumento"] = relationship(back_populates="estudiantes")
     grupo: Mapped["Grupo | None"] = relationship(back_populates="estudiantes")
-    subgrupos: Mapped[list["SubGrupoEstudiante"]] = relationship(back_populates="estudiante")

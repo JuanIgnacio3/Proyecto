@@ -38,9 +38,8 @@ from app.models.encargado_estudiante import EncargadoEstudiante
 from app.models.estudiante import Estudiante
 from app.models.grupo import Grupo
 from app.models.profesor import Profesor
+from app.models.profesor_asignatura_grupo import ProfesorAsignaturaGrupo
 from app.models.rol import Rol
-from app.models.subgrupo import SubGrupo
-from app.models.subgrupo_profesor import SubGrupoProfesor
 from app.models.tipo_documento import TipoDocumento
 from app.models.usuario import Usuario
 
@@ -145,8 +144,9 @@ class Dataset:
     prof: Profesor
     enc: Encargado  # encargado vinculado a est_prof (visible al profesor)
     enc_otro: Encargado  # encargado vinculado a est_otro (ajeno al profesor)
-    subgrupo_prof: SubGrupo  # subgrupo del grupo del profesor (propio)
-    subgrupo_otro: SubGrupo  # subgrupo de un grupo ajeno
+    asignatura: Asignatura  # materia base del dataset
+    asignacion_prof: ProfesorAsignaturaGrupo  # clase del profesor (en grupo_prof)
+    asignacion_otro: ProfesorAsignaturaGrupo  # clase ajena (en grupo_otro)
     user_admin: Usuario
     user_prof: Usuario
     user_enc: Usuario
@@ -202,7 +202,6 @@ def data(db_session) -> Dataset:
         birthdate_profesor=date(1990, 1, 1),
         id_tipo_documento=tipo.id_tipo_documento,
         num_documento_profesor="P-0001",
-        id_grupo=None,
     )
     s.add(prof)
     s.flush()
@@ -225,12 +224,41 @@ def data(db_session) -> Dataset:
     est_self = make_estudiante(user_est, "E-0003", grupo_otro)
     s.flush()
 
-    subgrupo_prof = SubGrupo(name_subgrupo="Lab", tipo_subgrupo="Taller", id_grupo=grupo_prof.id_grupo)
-    subgrupo_otro = SubGrupo(name_subgrupo="LabOtro", tipo_subgrupo="Taller", id_grupo=grupo_otro.id_grupo)
-    s.add_all([subgrupo_prof, subgrupo_otro])
+    # El profesor imparte una materia en el grupo propio -> sus grupos = {grupo_prof}.
+    # Se usa una materia distinta a la base del grupo para no chocar con las pruebas
+    # de asignaciones (que crean asignaciones con la materia base).
+    asignatura_prof = Asignatura(name_asignatura="Estudios Sociales")
+    s.add(asignatura_prof)
     s.flush()
-    # El profesor imparte el subgrupo del grupo propio -> sus grupos = {grupo_prof}.
-    s.add(SubGrupoProfesor(id_profesor=prof.id_profesor, id_subgrupo=subgrupo_prof.id_subgrupo))
+    asignacion_prof = ProfesorAsignaturaGrupo(
+        id_profesor=prof.id_profesor,
+        id_grupo=grupo_prof.id_grupo,
+        id_asignatura=asignatura_prof.id_asignatura,
+    )
+    s.add(asignacion_prof)
+    s.flush()
+
+    # Segundo profesor con una clase en el grupo AJENO al profesor principal:
+    # sirve para probar que el profesor no accede a clases fuera de su alcance.
+    user_prof_otro = make_user("prof_otro@test.cr", "Profesor")
+    s.flush()
+    prof_otro = Profesor(
+        id_usuario=user_prof_otro.id_usuario,
+        name_profesor="ProfOtro",
+        sec_name_profesor="Test",
+        birthdate_profesor=date(1990, 1, 1),
+        id_tipo_documento=tipo.id_tipo_documento,
+        num_documento_profesor="P-0002",
+    )
+    s.add(prof_otro)
+    s.flush()
+    asignacion_otro = ProfesorAsignaturaGrupo(
+        id_profesor=prof_otro.id_profesor,
+        id_grupo=grupo_otro.id_grupo,
+        id_asignatura=asignatura.id_asignatura,
+    )
+    s.add(asignacion_otro)
+    s.flush()
 
     enc = Encargado(
         id_usuario=user_enc.id_usuario,
@@ -274,8 +302,9 @@ def data(db_session) -> Dataset:
         prof=prof,
         enc=enc,
         enc_otro=enc_otro,
-        subgrupo_prof=subgrupo_prof,
-        subgrupo_otro=subgrupo_otro,
+        asignatura=asignatura,
+        asignacion_prof=asignacion_prof,
+        asignacion_otro=asignacion_otro,
         user_admin=user_admin,
         user_prof=user_prof,
         user_enc=user_enc,

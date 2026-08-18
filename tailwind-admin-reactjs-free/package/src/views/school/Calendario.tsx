@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import CardBox from 'src/components/shared/CardBox';
 import {
   CrudScaffold,
+  FormSelect,
+  Pagination,
   PublicationBadge,
+  SearchInput,
   StatusBadge,
   useConfirm,
   VisibilityFilter,
   type Visibilidad,
 } from 'src/components/institutional';
+import { usePagination } from 'src/hooks/usePagination';
 import { Button } from 'src/components/ui/button';
 import {
   Dialog,
@@ -20,6 +24,7 @@ import { Input } from 'src/components/ui/input';
 import { Label } from 'src/components/ui/label';
 import { useAuth } from 'src/context/auth-context';
 import { ApiError } from 'src/lib/api';
+import { matchText } from 'src/lib/search';
 import {
   activateEvento,
   createEvento,
@@ -81,6 +86,7 @@ const Calendario = () => {
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
   const [fVisibilidad, setFVisibilidad] = useState<Visibilidad>('todos');
+  const [query, setQuery] = useState('');
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Evento | null>(null);
@@ -109,21 +115,24 @@ const Calendario = () => {
       eventos.filter((e) => {
         if (fVisibilidad === 'publicos' && !e.es_publico) return false;
         if (fVisibilidad === 'privados' && e.es_publico) return false;
+        if (!matchText(query, e.titulo, e.descripcion, e.tipo)) return false;
         return true;
       }),
-    [eventos, fVisibilidad],
+    [eventos, fVisibilidad, query],
   );
+
+  const paginacion = usePagination(visibles, 12);
 
   const grupos = useMemo(() => {
     const map = new Map<string, Evento[]>();
-    visibles.forEach((e) => {
+    paginacion.pageItems.forEach((e) => {
       const key = mesAnio(e.fecha_inicio);
       const list = map.get(key) ?? [];
       list.push(e);
       map.set(key, list);
     });
     return [...map.entries()];
-  }, [visibles]);
+  }, [paginacion.pageItems]);
 
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -220,7 +229,12 @@ const Calendario = () => {
         shown={visibles.length}
         emptyMessage='No hay eventos. Crea el primero con "Nuevo evento".'
         filteredEmptyMessage="Ningún evento coincide con el filtro seleccionado."
-        filters={<VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />}
+        filters={
+          <>
+            <SearchInput value={query} onChange={setQuery} placeholder="Buscar evento..." />
+            <VisibilityFilter value={fVisibilidad} onChange={setFVisibilidad} />
+          </>
+        }
       >
         {grupos.map(([mes, items]) => (
           <div key={mes} className="col-span-12">
@@ -294,6 +308,21 @@ const Calendario = () => {
             </CardBox>
           </div>
         ))}
+        {visibles.length > 0 && (
+          <div className="col-span-12">
+            <CardBox className="p-0">
+              <Pagination
+                className="border-t-0"
+                page={paginacion.page}
+                pageCount={paginacion.pageCount}
+                onPageChange={paginacion.setPage}
+                rangeStart={paginacion.rangeStart}
+                rangeEnd={paginacion.rangeEnd}
+                total={paginacion.total}
+              />
+            </CardBox>
+          </div>
+        )}
       </CrudScaffold>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -344,7 +373,7 @@ const Calendario = () => {
               </div>
               <div>
                 <Label htmlFor="etipo">Tipo</Label>
-                <select
+                <FormSelect
                   id="etipo"
                   className={`${inputClass} mt-1`}
                   value={form.tipo}
@@ -355,7 +384,7 @@ const Calendario = () => {
                       {t}
                     </option>
                   ))}
-                </select>
+                </FormSelect>
               </div>
             </div>
 
